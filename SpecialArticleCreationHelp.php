@@ -19,7 +19,7 @@ class SpecialArticleCreationHelp extends SpecialPage {
 		// Add modules
 		$output->addModules( array(
 			'ext.articlecreationhelp.specialpage',
-// 			'ext.guidedTour.tour.articlecreationhelpredlinksanon',
+ 			'ext.guidedTour.tour.articlecreationhelpspecialpageanon',
 		) );
 		
 		// The page to retreat<<<<<<<return to
@@ -49,8 +49,6 @@ class SpecialArticleCreationHelp extends SpecialPage {
 			. $wgSitename
 			. $this->msg( 'articlecreationhelp-specialpage-edit-textpost' );
 
-		error_log($editText);
-		
 		$sandboxURL = '?title=User:' . $output->getUser()->getName() . '/sandbox&action=edit';
 		$sandboxImgSrc = '//upload.wikimedia.org/wikipedia/commons/3/37/Icon-wrench.png';
 		$sandboxHeader = $this->msg( 'articlecreationhelp-specialpage-sandbox-header' );

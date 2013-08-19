@@ -1,6 +1,6 @@
 ( function ( $, mw ) {
 	$( document ).ready( function () {
-		var EXT_ART_C_REDLINKS, loggedIn, $focusedRedLink, redLinkHoverTimer,
+		var EXT_ART_C_REDLINKS, config, loggedIn, $focusedRedLink, redLinkHoverTimer,
 		lastRedLinkOriginalTitle, $redLinks, tourActive;
 
 		// Constants
@@ -22,9 +22,14 @@
 			'inlineButtonClass': 'mw-ui-primary ext-art-c-h-inline-button'
 		};
 
-		// Very strong magic used to get info on whether we're logged in
-		loggedIn = mw.config.get( [ 'wgArticleCreationHelpRedLinks' ] )
-			.wgArticleCreationHelpRedLinks.loggedIn;
+		// Very strong magic used to get config variables from PHP
+		config = mw.config.get( [ 'wgArticleCreationHelpRedLinks' ] );
+		loggedIn = config.wgArticleCreationHelpRedLinks.loggedIn;
+		suspendRedLinkTours = config.wgArticleCreationHelpRedLinks.suspendRedLinkTours;
+
+		if (suspendRedLinkTours) {
+			return;
+		}
 
 		tourActive = false;
 		$focusedRedLink = null;

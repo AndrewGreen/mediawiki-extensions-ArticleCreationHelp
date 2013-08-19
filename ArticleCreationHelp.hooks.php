@@ -25,8 +25,20 @@ class ArticleCreationHelpHooks {
 	 */
 	public static function onMakeGlobalVariablesScript( &$vars, OutputPage $out ) {
 	
+		global $wgTitle;
+
+		$loggedIn = !( $out->getUser()->isAnon());
+		
+		// De-activate red link callouts it we're on the special page
+		// and user isn't logged in
+		// TODO fix client code to make this unnecessary
+		$suspendRedLinkTours =
+			(!($loggedIn) && 
+			($wgTitle == 'Special:ArticleCreationHelp'));
+		
 		$vars[ 'wgArticleCreationHelpRedLinks' ] = array(
-			'loggedIn' => !( $out->getUser()->isAnon() ),
+			'loggedIn' => $loggedIn,
+			'suspendRedLinkTours' => $suspendRedLinkTours,
 		);
 		
 		// TODO: Implement case for users who have disabled article creation help

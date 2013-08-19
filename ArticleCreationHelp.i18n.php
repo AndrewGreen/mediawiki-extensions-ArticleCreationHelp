@@ -10,6 +10,7 @@
 $messages = array();
 
 $messages['en'] = array(
+	// Red links
 	'articlecreationhelp-desc' => 'Helps users learn to create new articles effectively; provides popups over red links and an article creation landing page.',
 	'articlecreationhelp-redlinks-redtextmeanspre' => 'Red text here means the article ‘',
 	'articlecreationhelp-redlinks-redtextmeanspost' => '’ doesn’t exist.',
@@ -24,6 +25,7 @@ $messages['en'] = array(
 	'articlecreationhelp-redlinks-firststep-login' => 'Log in',
 	'articlecreationhelp-redlinks-firststep-post' => '.',
 		
+	// Special page
 	'articlecreationhelp-specialpage-titlepre' => 'Create the Article ‘',
 	'articlecreationhelp-specialpage-titlepost' => '’',
 	'articlecreationhelp-specialpage-headerpre' => 'The article ‘',
@@ -35,6 +37,10 @@ $messages['en'] = array(
 	'articlecreationhelp-specialpage-sandbox-text'=> 'It’s easy move drafts to the main encyclopedia whenever you’re ready.',
 	'articlecreationhelp-specialpage-returnpre' => 'Or, if you’d rather not create this article now, you can go back to ',
 	'articlecreationhelp-specialpage-returnpost' => '.',
+	'articlecreationhelp-specialpage-overlay-pre' => 'To create an article, please',
+	'articlecreationhelp-specialpage-overlay-signup' => 'Create an account',
+	'articlecreationhelp-specialpage-overlay-or' => ' or ',
+	'articlecreationhelp-specialpage-overlay-login' => 'Log in',
 );
 
 $messages['qqq'] = array(

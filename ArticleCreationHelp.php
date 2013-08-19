@@ -96,17 +96,27 @@ $wgResourceModules[ 'ext.articlecreationhelp.redlinks' ] = array(
 	),
 ) + $articleCreationHelpModuleInfo;
 
-// Landing page module
+// Special page module
 $wgResourceModules[ 'ext.articlecreationhelp.specialpage' ] = array(
 		'scripts' => 'ext.articlecreationhelp.specialpage.js',
 		'styles' => 'ext.articlecreationhelp.specialpage.css',
 		'dependencies' => array(
 				'ext.guidedTour',
 		),
-// 		'messages' => array(
-// 		),
+		'messages' => array(
+			'articlecreationhelp-specialpage-overlay-pre',
+			'articlecreationhelp-specialpage-overlay-signup',
+			'articlecreationhelp-specialpage-overlay-or',
+			'articlecreationhelp-specialpage-overlay-login',
+		),
 ) + $articleCreationHelpModuleInfo;
-	
+
+// "Tour" for special page for anonymous users
+$wgResourceModules['ext.guidedTour.tour.articlecreationhelpspecialpageanon'] = array(
+		'scripts' => 'ext.articlecreationhelp.specialpage.anon.js',
+		'dependencies' => 'ext.guidedTour',
+) + $articleCreationHelpModuleInfo;
+
 // Hooks
 $wgHooks[ 'MakeGlobalVariablesScript' ][] = 'ArticleCreationHelpHooks::onMakeGlobalVariablesScript';
 $wgHooks[ 'BeforePageDisplay' ][] = 'ArticleCreationHelpHooks::onBeforePageDisplay';
