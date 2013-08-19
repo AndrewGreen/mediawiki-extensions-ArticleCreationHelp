@@ -32,7 +32,10 @@
 		// overlay "tour", and return. Don't attach handlers for red links.
 		if (onSpecialPage && !loggedIn) {
 			tourSpec = mw.guidedTour.getTourSpec( EXT_ART_C.anonSpecialPageTourName );
+
+			tourSpec.steps[0].description = makeSignUpOrLogIn();
 			mw.guidedTour.launchTour( EXT_ART_C.anonSpecialPageTourName );
+
 			return;
 		}
 
@@ -226,25 +229,25 @@
 				'"><span class="',
 				EXT_ART_C.secondLineInCallout,
 				'">',
-				mw.message( 'articlecreationhelp-redlinks-firststep-pre' ).text(),
+				mw.message( 'articlecreationhelp-firststep-pre' ).text(),
 				'</span>',
 				makeInlineButton(
-					mw.message( 'articlecreationhelp-redlinks-firststep-signup' ).text(),
+					mw.message( 'articlecreationhelp-firststep-signup' ).text(),
 					{ url: createAccountURL }
 				),
 				'<span class="',
 				EXT_ART_C.secondLineInCallout,
 				'">',
-				mw.message( 'articlecreationhelp-redlinks-firststep-or' ).text(),
+				mw.message( 'articlecreationhelp-firststep-or' ).text(),
 				'</span>',
 				makeInlineButton(
-					mw.message( 'articlecreationhelp-redlinks-firststep-login' ).text(),
+					mw.message( 'articlecreationhelp-firststep-login' ).text(),
 					{ url: signInURL }
 				),
 				'<span class="',
 				EXT_ART_C.secondLineInCallout,
 				'">',
-				mw.message( 'articlecreationhelp-redlinks-firststep-post' ).text(),
+				mw.message( 'articlecreationhelp-firststep-post' ).text(),
 				'</span></p>',
 	        ].join('');
 		}

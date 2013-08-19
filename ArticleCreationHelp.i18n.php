@@ -10,8 +10,10 @@
 $messages = array();
 
 $messages['en'] = array(
-	// Red links
+	// Doc
 	'articlecreationhelp-desc' => 'Helps users learn to create new articles effectively; provides popups over red links and an article creation landing page.',
+	
+	// Red links	
 	'articlecreationhelp-redlinks-redtextmeanspre' => 'Red text here means the article ‘',
 	'articlecreationhelp-redlinks-redtextmeanspost' => '’ doesn’t exist.',
 	'articlecreationhelp-redlinks-liketocreateone' => 'Would you like to create it?',
@@ -19,11 +21,13 @@ $messages['en'] = array(
 	'articlecreationhelp-redlinks-createarticle' => 'Create article',
 	'articlecreationhelp-redlinks-noarticlepre' => 'The article ‘',
 	'articlecreationhelp-redlinks-noarticlepost' => '’ doesn’t exist.',
-	'articlecreationhelp-redlinks-firststep-pre' => 'To create an article, first you should<br />',
-	'articlecreationhelp-redlinks-firststep-signup' => 'Create an account',
-	'articlecreationhelp-redlinks-firststep-or' => ' or ',
-	'articlecreationhelp-redlinks-firststep-login' => 'Log in',
-	'articlecreationhelp-redlinks-firststep-post' => '.',
+		
+	// Please sign up or log in (used various places)
+	'articlecreationhelp-firststep-pre' => 'To create an article, first you should<br />',
+	'articlecreationhelp-firststep-signup' => 'Create an account',
+	'articlecreationhelp-firststep-or' => ' or ',
+	'articlecreationhelp-firststep-login' => 'Log in',
+	'articlecreationhelp-firststep-post' => '.',
 		
 	// Special page
 	'articlecreationhelp-specialpage-titlepre' => 'Create the Article ‘',
@@ -36,11 +40,7 @@ $messages['en'] = array(
 	'articlecreationhelp-specialpage-sandbox-header'=> 'Create a Draft in Your Sandbox',
 	'articlecreationhelp-specialpage-sandbox-text'=> 'It’s easy move drafts to the main encyclopedia whenever you’re ready.',
 	'articlecreationhelp-specialpage-returnpre' => 'Or, if you’d rather not create this article now, you can go back to ',
-	'articlecreationhelp-specialpage-returnpost' => '.',
-	'articlecreationhelp-specialpage-overlay-pre' => 'To create an article, please',
-	'articlecreationhelp-specialpage-overlay-signup' => 'Create an account',
-	'articlecreationhelp-specialpage-overlay-or' => ' or ',
-	'articlecreationhelp-specialpage-overlay-login' => 'Log in',
+	'articlecreationhelp-specialpage-returnpost' => '.'
 );
 
 $messages['qqq'] = array(
