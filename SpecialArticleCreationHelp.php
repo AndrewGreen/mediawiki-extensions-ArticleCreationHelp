@@ -22,6 +22,8 @@ class SpecialArticleCreationHelp extends SpecialPage {
  			'ext.guidedTour.tour.articlecreationhelpspecialpageanon',
 		) );
 		
+		// TODO Error handling if we don't get the parameters we're expecting
+		
 		// The page to retreat<<<<<<<return to
 		$returnTo = $request->getText('returnto');
 		

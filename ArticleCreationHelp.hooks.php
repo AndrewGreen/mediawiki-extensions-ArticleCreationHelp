@@ -27,18 +27,12 @@ class ArticleCreationHelpHooks {
 	
 		global $wgTitle;
 
-		$loggedIn = !( $out->getUser()->isAnon());
-		
-		// De-activate red link callouts it we're on the special page
-		// and user isn't logged in
-		// TODO fix client code to make this unnecessary
-		$suspendRedLinkTours =
-			(!($loggedIn) && 
-			($wgTitle == 'Special:ArticleCreationHelp'));
+		$loggedIn = !( $out->getUser()->isAnon() );
+		$onSpecialPage = ($wgTitle == 'Special:ArticleCreationHelp'); 		
 		
 		$vars[ 'wgArticleCreationHelpRedLinks' ] = array(
 			'loggedIn' => $loggedIn,
-			'suspendRedLinkTours' => $suspendRedLinkTours,
+			'onSpecialPage' => $onSpecialPage,
 		);
 		
 		// TODO: Implement case for users who have disabled article creation help

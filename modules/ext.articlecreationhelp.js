@@ -1,14 +1,15 @@
 ( function ( $, mw ) {
 	$( document ).ready( function () {
-		var EXT_ART_C_REDLINKS, config, loggedIn, $focusedRedLink, redLinkHoverTimer,
+		var EXT_ART_C, config, loggedIn, $focusedRedLink, redLinkHoverTimer,
 		lastRedLinkOriginalTitle, $redLinks, tourActive;
 
 		// Constants
-		EXT_ART_C_REDLINKS = {
+		EXT_ART_C = {
 			// Tour names: coordinate with ArticleCreationHelp.php and
 			// .js files for tours.
 			'anonTourName':	'articlecreationhelpredlinksanon',
 			'loggedInTourName':	'articlecreationhelpredlinksloggedin',
+			'anonSpecialPageTourName':	'articlecreationhelpspecialpageanon',
 			'hoverTimerMS': 700,
 
 			// CSS classes. Must coordinate with articlecreationhelpredlinks.css
@@ -25,9 +26,13 @@
 		// Very strong magic used to get config variables from PHP
 		config = mw.config.get( [ 'wgArticleCreationHelpRedLinks' ] );
 		loggedIn = config.wgArticleCreationHelpRedLinks.loggedIn;
-		suspendRedLinkTours = config.wgArticleCreationHelpRedLinks.suspendRedLinkTours;
+		onSpecialPage = config.wgArticleCreationHelpRedLinks.onSpecialPage;
 
-		if (suspendRedLinkTours) {
+		// If we're on the special page and not logged in, only run an
+		// overlay "tour", and return. Don't attach handlers for red links.
+		if (onSpecialPage && !loggedIn) {
+			tourSpec = mw.guidedTour.getTourSpec( EXT_ART_C.anonSpecialPageTourName );
+			mw.guidedTour.launchTour( EXT_ART_C.anonSpecialPageTourName );
 			return;
 		}
 
@@ -51,10 +56,10 @@
 
 			// Set up special class indicating the element to attach to
 			if ( $focusedRedLink ) {
-				$focusedRedLink.removeClass( EXT_ART_C_REDLINKS.redLinkAttach );
+				$focusedRedLink.removeClass( EXT_ART_C.redLinkAttach );
 			}
 			$focusedRedLink = $a;
-			$focusedRedLink.addClass( EXT_ART_C_REDLINKS.redLinkAttach );
+			$focusedRedLink.addClass( EXT_ART_C.redLinkAttach );
 
 			articleTitle = getArticleTitle();
 
@@ -65,7 +70,7 @@
 
 				// Red links our for logged in users
 
-				tourSpec = mw.guidedTour.getTourSpec( EXT_ART_C_REDLINKS.loggedInTourName);
+				tourSpec = mw.guidedTour.getTourSpec( EXT_ART_C.loggedInTourName);
 
 				noArticle = makeFirstLine(
 					mw.message( 'articlecreationhelp-redlinks-noarticlepre' ).text(),
@@ -90,7 +95,7 @@
 				tourSpec.steps[0].onClose = onTourClose;
 
 				// Launch the tour
-				mw.guidedTour.launchTour( EXT_ART_C_REDLINKS.loggedInTourName );
+				mw.guidedTour.launchTour( EXT_ART_C.loggedInTourName );
 
 			} else {
 
@@ -98,7 +103,7 @@
 
 				// Set the descriptions in callouts (set programmatically because
 				// they contain the article name).
-				tourSpec = mw.guidedTour.getTourSpec( EXT_ART_C_REDLINKS.anonTourName );
+				tourSpec = mw.guidedTour.getTourSpec( EXT_ART_C.anonTourName );
 
 				redTextMeans = makeFirstLine(
 					mw.message( 'articlecreationhelp-redlinks-redtextmeanspre' ).text(),
@@ -119,7 +124,7 @@
 				tourSpec.steps[1].onClose = onTourClose;
 
 				// Launch the tour
-				mw.guidedTour.launchTour( EXT_ART_C_REDLINKS.anonTourName );
+				mw.guidedTour.launchTour( EXT_ART_C.anonTourName );
 			}
 		}
 
@@ -142,13 +147,13 @@
 		function makeFirstLine( pre, title, post ) {
 			return [
 	            '<p class="',
-	            EXT_ART_C_REDLINKS.paragraphInCalloutClass,
+	            EXT_ART_C.paragraphInCalloutClass,
 	            ' ',
-	            EXT_ART_C_REDLINKS.firstLineInCallout,
+	            EXT_ART_C.firstLineInCallout,
 	            '">',
 				pre,
 				'<span class="',
-				EXT_ART_C_REDLINKS.titleInCalloutClass,
+				EXT_ART_C.titleInCalloutClass,
 				'">',
 				title,
 				'</span>',
@@ -167,9 +172,9 @@
 				'<a href="',
 				url,
 				'" class="',
-				EXT_ART_C_REDLINKS.buttonClass,
+				EXT_ART_C.buttonClass,
 				' ',
-				EXT_ART_C_REDLINKS.inlineButtonClass,
+				EXT_ART_C.inlineButtonClass,
 				'"'
 			].join('');
 
@@ -194,9 +199,9 @@
 		function makeCreateOne(buttonName, buttonOptions) {
 			return [
 	            '<p class="',
-	            EXT_ART_C_REDLINKS.paragraphInCalloutClass,
+	            EXT_ART_C.paragraphInCalloutClass,
 	            '"><span class="',
-				EXT_ART_C_REDLINKS.secondLineInCallout,
+				EXT_ART_C.secondLineInCallout,
 	            '">',
 	            mw.message( 'articlecreationhelp-redlinks-liketocreateone' ).text(),
 	            '</span>&nbsp;',
@@ -217,9 +222,9 @@
 
 			return [
 				'<p class="',
-				EXT_ART_C_REDLINKS.paragraphInCalloutClass,
+				EXT_ART_C.paragraphInCalloutClass,
 				'"><span class="',
-				EXT_ART_C_REDLINKS.secondLineInCallout,
+				EXT_ART_C.secondLineInCallout,
 				'">',
 				mw.message( 'articlecreationhelp-redlinks-firststep-pre' ).text(),
 				'</span>',
@@ -228,7 +233,7 @@
 					{ url: createAccountURL }
 				),
 				'<span class="',
-				EXT_ART_C_REDLINKS.secondLineInCallout,
+				EXT_ART_C.secondLineInCallout,
 				'">',
 				mw.message( 'articlecreationhelp-redlinks-firststep-or' ).text(),
 				'</span>',
@@ -237,7 +242,7 @@
 					{ url: signInURL }
 				),
 				'<span class="',
-				EXT_ART_C_REDLINKS.secondLineInCallout,
+				EXT_ART_C.secondLineInCallout,
 				'">',
 				mw.message( 'articlecreationhelp-redlinks-firststep-post' ).text(),
 				'</span></p>',
@@ -283,7 +288,7 @@
 				redLinkHoverTimer = setTimeout(function() {
 					clearRedLinkHoverTimer();
 					startTour( $a );
-				}, EXT_ART_C_REDLINKS.hoverTimerMS );
+				}, EXT_ART_C.hoverTimerMS );
 			}
 
 			// Prevent native tooltip on link by removing title attribute

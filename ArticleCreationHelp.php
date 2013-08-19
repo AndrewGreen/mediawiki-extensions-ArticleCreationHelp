@@ -73,10 +73,10 @@ $wgResourceModules['ext.guidedTour.tour.articlecreationhelpredlinksloggedin'] = 
 		'dependencies' => 'ext.guidedTour',
 ) + $articleCreationHelpModuleInfo;
 
-// Red links module		
+// Global module		
 $wgResourceModules[ 'ext.articlecreationhelp.redlinks' ] = array(
-	'scripts' => 'ext.articlecreationhelp.redlinks.js',
-	'styles' => 'ext.articlecreationhelp.redlinks.css',
+	'scripts' => 'ext.articlecreationhelp.js',
+	'styles' => 'ext.articlecreationhelp.css',
 	'dependencies' => array(
 		'ext.guidedTour',
 	),
@@ -93,21 +93,18 @@ $wgResourceModules[ 'ext.articlecreationhelp.redlinks' ] = array(
 		'articlecreationhelp-redlinks-firststep-or',
 		'articlecreationhelp-redlinks-firststep-login',
 		'articlecreationhelp-redlinks-firststep-post',
+		'articlecreationhelp-specialpage-overlay-pre',
+		'articlecreationhelp-specialpage-overlay-signup',
+		'articlecreationhelp-specialpage-overlay-or',
+		'articlecreationhelp-specialpage-overlay-login',
 	),
 ) + $articleCreationHelpModuleInfo;
 
 // Special page module
 $wgResourceModules[ 'ext.articlecreationhelp.specialpage' ] = array(
-		'scripts' => 'ext.articlecreationhelp.specialpage.js',
 		'styles' => 'ext.articlecreationhelp.specialpage.css',
 		'dependencies' => array(
 				'ext.guidedTour',
-		),
-		'messages' => array(
-			'articlecreationhelp-specialpage-overlay-pre',
-			'articlecreationhelp-specialpage-overlay-signup',
-			'articlecreationhelp-specialpage-overlay-or',
-			'articlecreationhelp-specialpage-overlay-login',
 		),
 ) + $articleCreationHelpModuleInfo;
 
