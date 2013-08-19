@@ -53,6 +53,9 @@
 
 			articleTitle = getArticleTitle();
 
+			// TODO set config variables for other Mediawiki configurations
+			// (for example, wikis where anonymous users can create articles).
+
 			if (loggedIn) {
 
 				// Red links our for logged in users
