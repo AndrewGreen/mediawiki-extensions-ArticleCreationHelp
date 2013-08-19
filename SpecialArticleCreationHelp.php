@@ -7,7 +7,7 @@ class SpecialArticleCreationHelp extends SpecialPage {
 	
 	public function execute( $parameter ) {
 		
-		global $wgScript;
+		global $wgScript, $wgSitename;
 		
 		// Required to initialize output page object $wgOut
 		$this->setHeaders();
@@ -44,8 +44,13 @@ class SpecialArticleCreationHelp extends SpecialPage {
 		$editURL = $wgScript . '?title=' . $newTitle . '&action=edit';
 		$editImgSrc = '//upload.wikimedia.org/wikipedia/commons/d/de/Icon-pencil.png';
 		$editHeader = $this->msg( 'articlecreationhelp-specialpage-edit-header' );
-		$editText = $this->msg( 'articlecreationhelp-specialpage-edit-text' );;
+		$editText =
+			$this->msg( 'articlecreationhelp-specialpage-edit-textpre' )
+			. $wgSitename
+			. $this->msg( 'articlecreationhelp-specialpage-edit-textpost' );
 
+		error_log($editText);
+		
 		$sandboxURL = '?title=User:' . $output->getUser()->getName() . '/sandbox&action=edit';
 		$sandboxImgSrc = '//upload.wikimedia.org/wikipedia/commons/3/37/Icon-wrench.png';
 		$sandboxHeader = $this->msg( 'articlecreationhelp-specialpage-sandbox-header' );
