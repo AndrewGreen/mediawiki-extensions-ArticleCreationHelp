@@ -1,0 +1,32 @@
+@CHARSET "UTF-8";
+
+.guider_content p  {
+	/* undo clear: both from guiders.css */
+	clear: none !important;
+}
+
+.ext-art-c-h-redlinkattach {
+	outline: none;
+}
+
+.ext-art-c-h-title-in-callout {
+	color: #550000 !important;
+}
+
+.ext-art-c-h-par-in-callout {
+	line-height: 1.45em !important;
+	text-align: center;
+}
+
+.ext-art-c-h-1st-line-in-callout {
+	font-size: 1.2em !important;
+}
+
+.ext-art-c-h-2nd-line-in-callout {
+	color: #333 !important;
+	font-style: italic;
+}
+
+.ext-art-c-h-inline-button {
+	margin: 5px !important;
+}
