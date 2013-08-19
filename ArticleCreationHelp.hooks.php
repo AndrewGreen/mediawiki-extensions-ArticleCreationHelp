@@ -12,7 +12,7 @@ class ArticleCreationHelpHooks {
 	
 	const SCHEMA_NAME = 'ArticleCreationHelpRedLinks';
 	
-	// TODO: where should this come from???
+	// TODO: Where should this come from??? I just made it up.
 	const SCHEMA_REV_ID = 2314223;
 	
 	/**

@@ -13,26 +13,32 @@ class SpecialArticleCreationHelp extends SpecialPage {
 		$output = $this->getOutput();
 		$request = $this->getRequest();
 
-		// The page to return to if we wish
+		// Add modules
+		$output->addModules( array(
+			'ext.articlecreationhelp.specialpage',
+// 			'ext.guidedTour.tour.articlecreationhelpredlinksanon',
+		) );
+		
+		// The page to retreat<<<<<<<return to
 		$returnTo = $request->getText('returnto');
 		
 		// The page to create
 		$newTitle = $request->getText('newtitle');
 		
-		// Landing page title
+		// special page title
 		$output->setPageTitle( 
-			$this->msg( 'articlecreationhelp-landingpage-title' ) 
+			$this->msg( 'articlecreationhelp-specialpage-title' ) 
 			. $newTitle );
 		
 		// Introductory text
 		$output->addWikiText(
-			$this->msg( 'articlecreationhelp-landingpage-noarticlepre' )
+			$this->msg( 'articlecreationhelp-specialpage-noarticlepre' )
 			. $newTitle
-			. $this->msg( 'articlecreationhelp-landingpage-noarticlepost' )
+			. $this->msg( 'articlecreationhelp-specialpage-noarticlepost' )
 		);
 		
 		$output->addWikiText(
-			$this->msg( 'articlecreationhelp-landingpage-tocreateit' )
+			$this->msg( 'articlecreationhelp-specialpage-tocreateit' )
 		);
 	}
 }

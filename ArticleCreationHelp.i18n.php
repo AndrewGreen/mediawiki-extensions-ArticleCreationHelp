@@ -24,10 +24,10 @@ $messages['en'] = array(
 	'articlecreationhelp-redlinks-firststep-login' => 'Log in',
 	'articlecreationhelp-redlinks-firststep-post' => '.',
 		
-	'articlecreationhelp-landingpage-title' => 'Creating an Article: ',
-	'articlecreationhelp-landingpage-noarticlepre' => 'The article ‘',
-	'articlecreationhelp-landingpage-noarticlepost' => '’ doesn\'t exist yet.',
-	'articlecreationhelp-landingpage-tocreateit' => 'To create it, you may...',
+	'articlecreationhelp-specialpage-title' => 'Creating an Article: ',
+	'articlecreationhelp-specialpage-noarticlepre' => 'The article ‘',
+	'articlecreationhelp-specialpage-noarticlepost' => '’ doesn\'t exist yet.',
+	'articlecreationhelp-specialpage-tocreateit' => 'To create it, you may...',
 );
 
 $messages['qqq'] = array(

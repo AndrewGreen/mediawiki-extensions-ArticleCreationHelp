@@ -4,7 +4,8 @@
  * effectively. It provides popups over red links and an article creation
  * landing page. 
  * 
- * Bits and pieces were adapted from the GettingStarted and GuidedTour extensions.
+ * Bits and pieces were pillaged<<<<<<<<adapted from the GettingStarted and
+ * GuidedTour extensions.
  * 
  * For more information, please see ...
  * 
@@ -45,8 +46,6 @@ $wgAutoloadClasses += array(
 
 // TODO event logging for A/B testing
 
-// TODO landing page (special page)
-
 // Repeated module info
 $articleCreationHelpModuleInfo = array(
 		'localBasePath' => __DIR__ . '/modules',
@@ -64,22 +63,21 @@ $wgResourceModules[ $articleCreationHelpSchemaModuleName ] = array(
 
 // Tour for red links for anonymous users
 $wgResourceModules['ext.guidedTour.tour.articlecreationhelpredlinksanon'] = array(
-		'scripts' => 'articlecreationhelpredlinksanon.js',
+		'scripts' => 'ext.articlecreationhelp.redlinks.anon.js',
 		'dependencies' => 'ext.guidedTour',
 ) + $articleCreationHelpModuleInfo;
 
 // Tour for red links for logged in users
 $wgResourceModules['ext.guidedTour.tour.articlecreationhelpredlinksloggedin'] = array(
-		'scripts' => 'articlecreationhelpredlinksloggedin.js',
+		'scripts' => 'ext.articlecreationhelp.redlinks.loggedin.js',
 		'dependencies' => 'ext.guidedTour',
 ) + $articleCreationHelpModuleInfo;
 
 // Red links module		
 $wgResourceModules[ 'ext.articlecreationhelp.redlinks' ] = array(
-	'scripts' => 'articlecreationhelpredlinks.js',
-	'styles' => 'articlecreationhelpredlinks.css',
+	'scripts' => 'ext.articlecreationhelp.redlinks.js',
+	'styles' => 'ext.articlecreationhelp.redlinks.css',
 	'dependencies' => array(
-		'mediawiki.ui',
 		'ext.guidedTour',
 	),
 	'messages' => array(
@@ -98,6 +96,17 @@ $wgResourceModules[ 'ext.articlecreationhelp.redlinks' ] = array(
 	),
 ) + $articleCreationHelpModuleInfo;
 
+// Landing page module
+$wgResourceModules[ 'ext.articlecreationhelp.specialpage' ] = array(
+		'scripts' => 'ext.articlecreationhelp.specialpage.js',
+		'styles' => 'ext.articlecreationhelp.specialpage.css',
+		'dependencies' => array(
+				'ext.guidedTour',
+		),
+// 		'messages' => array(
+// 		),
+) + $articleCreationHelpModuleInfo;
+	
 // Hooks
 $wgHooks[ 'MakeGlobalVariablesScript' ][] = 'ArticleCreationHelpHooks::onMakeGlobalVariablesScript';
 $wgHooks[ 'BeforePageDisplay' ][] = 'ArticleCreationHelpHooks::onBeforePageDisplay';
