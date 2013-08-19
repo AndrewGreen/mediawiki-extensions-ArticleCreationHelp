@@ -40,6 +40,10 @@
 
 			tourActive = true;
 
+			// TODO check if we're editing a page, and don't show callouts on
+			// red links to the same page. (That can happen when editing a user
+			// page or a user talk page.)
+
 			// Set up special class indicating the element to attach to
 			if ( $focusedRedLink ) {
 				$focusedRedLink.removeClass( EXT_ARTICLE_CREATION_HELP.redLinkAttach );
@@ -51,7 +55,7 @@
 
 			if (loggedIn) {
 
-				// Tour for logged in users
+				// Red links our for logged in users
 
 				tourSpec = mw.guidedTour.getTourSpec( EXT_ARTICLE_CREATION_HELP.loggedInTourName);
 
@@ -66,8 +70,6 @@
 					+ articleTitle
 					+ '&returnto='
 					+ mw.config.get( 'wgPageName' );
-
-//				createArticleURL = mw.util.wikiGetlink( 'Special:ArticleCreationHelp/' + articleTitle ) ;
 
 				tourSpec.steps[0].description = [
 					noArticle,
@@ -84,7 +86,7 @@
 
 			} else {
 
-				// Tour for anonymous users
+				// Red links tour for anonymous users
 
 				// Set the descriptions in callouts (set programmatically because
 				// they contain the article name).

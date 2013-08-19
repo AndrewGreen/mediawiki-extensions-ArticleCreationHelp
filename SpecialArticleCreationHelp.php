@@ -6,6 +6,9 @@ class SpecialArticleCreationHelp extends SpecialPage {
 	}
 	
 	public function execute( $parameter ) {
+		
+		global $wgScript;
+		
 		// Required to initialize output page object $wgOut
 		$this->setHeaders();
 		
@@ -22,23 +25,77 @@ class SpecialArticleCreationHelp extends SpecialPage {
 		// The page to retreat<<<<<<<return to
 		$returnTo = $request->getText('returnto');
 		
-		// The page to create
+		// The article to create
 		$newTitle = $request->getText('newtitle');
 		
-		// special page title
+		// Special page title
 		$output->setPageTitle( 
-			$this->msg( 'articlecreationhelp-specialpage-title' ) 
-			. $newTitle );
-		
-		// Introductory text
-		$output->addWikiText(
-			$this->msg( 'articlecreationhelp-specialpage-noarticlepre' )
+			$this->msg( 'articlecreationhelp-specialpage-titlepre' ) 
 			. $newTitle
-			. $this->msg( 'articlecreationhelp-specialpage-noarticlepost' )
+			. $this->msg( 'articlecreationhelp-specialpage-titlepost' ) );
+		
+		// Header
+		$header = 
+			$this->msg( 'articlecreationhelp-specialpage-headerpre' )
+			. $newTitle
+			. $this->msg( 'articlecreationhelp-specialpage-headerpost' );
+		
+		// Tasks
+		$editURL = $wgScript . '?title=' . $newTitle . '&action=edit';
+		$editImgSrc = '//upload.wikimedia.org/wikipedia/commons/d/de/Icon-pencil.png';
+		$editHeader = $this->msg( 'articlecreationhelp-specialpage-edit-header' );
+		$editText = $this->msg( 'articlecreationhelp-specialpage-edit-text' );;
+
+		$sandboxURL = '?title=User:' . $output->getUser()->getName() . '/sandbox&action=edit';
+		$sandboxImgSrc = '//upload.wikimedia.org/wikipedia/commons/3/37/Icon-wrench.png';
+		$sandboxHeader = $this->msg( 'articlecreationhelp-specialpage-sandbox-header' );
+		$sandboxText = $this->msg( 'articlecreationhelp-specialpage-sandbox-text' );;
+
+		$result = <<< EOF
+			<div class="ext-art-c-h-specialpage-container">
+				<div class="ext-art-c-h-specialpage-text">
+					<p>$header</p>
+				</div>
+				<div class="ext-art-c-h-specialpage-tasks">
+					<a href="$editURL" title="">
+						<div class="ext-art-c-h-specialpage-task-icon">
+							<img alt="" src="$editImgSrc" />
+						</div>
+						<div class="ext-art-c-h-specialpage-task-text">
+							<h4>$editHeader</h4>
+							<p>$editText</p>
+						</div>
+					</a>
+					<a href="$sandboxURL" title="">
+						<div class="ext-art-c-h-specialpage-task-icon">
+							<img alt="" src="$sandboxImgSrc" />
+						</div>
+						<div class="ext-art-c-h-specialpage-task-text">
+							<h4>$sandboxHeader</h4>
+							<p>$sandboxText</p>
+						</div>
+					</a>
+				</div>
+				<div class="ext-art-c-h-specialpage-text">
+					<p>
+EOF;
+		$output->addHTML( $result );
+		
+		// Return to previous page
+		$output->addWikiText( 
+				$this->msg( 'articlecreationhelp-specialpage-returnpre' )
+				. '[['
+				. str_replace( '_', ' ', $returnTo) // TODO Is this how it's done?
+				. ']]'
+				. $this->msg( 'articlecreationhelp-specialpage-returnpost' )
 		);
 		
-		$output->addWikiText(
-			$this->msg( 'articlecreationhelp-specialpage-tocreateit' )
-		);
+		// End tags		
+		$result = <<< EOF
+				</div>
+			</div>
+EOF;
+		$output->addHTML( $result );
 	}
 }
+//createArticleURL = mw.util.wikiGetlink( 'Special:ArticleCreationHelp/' + articleTitle ) ;

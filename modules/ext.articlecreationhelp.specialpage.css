@@ -1,26 +1,27 @@
 /* Mostly copied from ext.gettingstarted.css in the GettingStarted extension */
-/********************* Root Onboarding Container *********************/
-.mw-gettingstarted-container {
+
+/* page container */
+.ext-art-c-h-specialpage-container {
 	width: 60em;
 	margin: 1em 0;
 }
 
-/********************* Header Banner *********************/
-.mw-gettingstarted-header {
+/* header */
+.ext-art-c-h-specialpage-text {
 	font-weight: normal;
 	font-size: 132%;
 }
 
-/********************* Task Choice *********************/
-.mw-gettingstarted-tasks {
+/* tasks */
+.ext-art-c-h-specialpage-tasks {
 	margin: 0 auto;
 	margin-top: 30px;
 	width: 100%;
 }
 
-.mw-gettingstarted-tasks a {
+.ext-art-c-h-specialpage-tasks a {
 	display: block;
-	width: 25em;
+	width: 31em;
 	min-height: 5em;
 	padding: 1em;
 	margin: 1.5em 0;
@@ -38,7 +39,7 @@
 	border: 1px solid #dedede;
 }
 
-.mw-gettingstarted-tasks a:hover {
+.ext-art-c-h-specialpage-tasks a:hover {
 	background: #e5e5e5; /* Old browsers */
 	background: -moz-linear-gradient(top,  #e5e5e5 0%, #d6d6d6 100%); /* FF3.6+ */
 	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#e5e5e5), color-stop(100%,#d6d6d6)); /* Chrome,Safari4+ */
@@ -49,22 +50,22 @@
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e5e5e5', endColorstr='#d6d6d6',GradientType=0 ); /* IE6-9 */
 }
 
-.mw-gettingstarted-tasks a:link,
-.mw-gettingstarted-tasks a:visited,
-.mw-gettingstarted-tasks a:hover,
-.mw-gettingstarted-tasks a:active {
+.ext-art-c-h-specialpage-tasks a:link,
+.ext-art-c-h-specialpage-tasks a:visited,
+.ext-art-c-h-specialpage-tasks a:hover,
+.ext-art-c-h-specialpage-tasks a:active {
 	color: inherit;
 }
 
-.mw-gettingstarted-task-icon {
+.ext-art-c-h-specialpage-task-icon {
 	display: inline-block;
 	float: left;
 	width: 20%;
 }
 
-.mw-gettingstarted-task-text {
+.ext-art-c-h-specialpage-task-text {
 	display: inline-block;
 	float: right;
-	width: 75%;
+	width: 80%;
 }
 
