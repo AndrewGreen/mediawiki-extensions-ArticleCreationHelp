@@ -7,7 +7,7 @@
 			title: null,
 			position: 'top',
 			bufferOffset: 23,
-			width: 370,
+			width: 350,
 			attachTo: '.ext-art-c-h-redlinkattach',
 			uncacheable: true,
 			allowAutomaticOkay: false,

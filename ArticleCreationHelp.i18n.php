@@ -14,7 +14,7 @@ $messages['en'] = array(
 	'articlecreationhelp-desc' => 'Helps users learn to create new articles effectively; provides popups over red links and an article creation landing page.',
 	
 	// Red links	
-	'articlecreationhelp-redlinks-redtextmeanspre' => 'Red text here means the article ‘',
+	'articlecreationhelp-redlinks-redtextmeanspre' => 'The article ‘',
 	'articlecreationhelp-redlinks-redtextmeanspost' => '’ doesn’t exist.',
 	'articlecreationhelp-redlinks-liketocreateone' => 'Would you like to create it?',
 	'articlecreationhelp-redlinks-learnmore' => 'Learn more',
