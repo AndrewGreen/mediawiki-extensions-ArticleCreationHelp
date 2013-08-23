@@ -6,7 +6,7 @@
 		steps: [ {
 			title: null,
 			position: 'top',
-			bufferOffset: 23,
+			offset: {gap: 23},
 			width: 350,
 			attachTo: '.ext-art-c-h-redlinkattach',
 			uncacheable: true,
@@ -15,7 +15,7 @@
 		{
 			title: null,
 			position: 'top',
-			bufferOffset: 23,
+			offset: {gap: 23},
 			width: 330,
 			attachTo: '.ext-art-c-h-redlinkattach',
 			uncacheable: true,
