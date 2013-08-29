@@ -64,17 +64,23 @@ $wgResourceModules[ $articleCreationHelpSchemaModuleName ] = array(
 // Tour for red links for anonymous users
 $wgResourceModules['ext.guidedTour.tour.articlecreationhelpredlinksanon'] = array(
 		'scripts' => 'ext.articlecreationhelp.redlinks.anon.js',
-		'dependencies' => 'ext.guidedTour',
+		'dependencies' => array(
+				'ext.guidedTour',
+				'ext.articlecreationhelp',
+		),
 ) + $articleCreationHelpModuleInfo;
 
 // Tour for red links for logged in users
 $wgResourceModules['ext.guidedTour.tour.articlecreationhelpredlinksloggedin'] = array(
 		'scripts' => 'ext.articlecreationhelp.redlinks.loggedin.js',
-		'dependencies' => 'ext.guidedTour',
+		'dependencies' => array(
+				'ext.guidedTour',
+				'ext.articlecreationhelp',
+		),
 ) + $articleCreationHelpModuleInfo;
 
 // Global module		
-$wgResourceModules[ 'ext.articlecreationhelp.redlinks' ] = array(
+$wgResourceModules[ 'ext.articlecreationhelp' ] = array(
 	'scripts' => 'ext.articlecreationhelp.js',
 	'styles' => 'ext.articlecreationhelp.css',
 	'dependencies' => array(

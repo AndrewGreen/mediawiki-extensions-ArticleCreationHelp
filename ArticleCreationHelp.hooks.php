@@ -51,7 +51,7 @@ class ArticleCreationHelpHooks {
 	public static function onBeforePageDisplay( OutputPage $out, Skin $skin ) {
 		// Load up our module and tours
 		$out->addModules( array(
-			'ext.articlecreationhelp.redlinks',
+			'ext.articlecreationhelp',
 			'ext.guidedTour.tour.articlecreationhelpredlinksanon',
 			'ext.guidedTour.tour.articlecreationhelpredlinksloggedin',
 		) );
