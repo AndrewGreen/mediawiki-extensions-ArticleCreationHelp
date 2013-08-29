@@ -7,9 +7,9 @@
 			title: null,
 			position: 'top',
 			offset: {gap: 23},
-			width: 370,
+			width: 340,
 			attachTo: '.ext-art-c-h-redlinkattach',
-			uncacheable: true,
+			onClose: mw.articlecreationhelp.internal.closeTourHandler,
 			allowAutomaticOkay: false,
 		} ],
 		isSinglePage: true

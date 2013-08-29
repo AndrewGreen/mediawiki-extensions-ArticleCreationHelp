@@ -7,19 +7,10 @@
 			title: null,
 			position: 'top',
 			offset: {gap: 23},
-			width: 350,
+			width: 340,
 			attachTo: '.ext-art-c-h-redlinkattach',
-			uncacheable: true,
+			onClose: mw.articlecreationhelp.internal.closeTourHandler,
 			allowAutomaticOkay: false,
-		},
-		{
-			title: null,
-			position: 'top',
-			offset: {gap: 23},
-			width: 330,
-			attachTo: '.ext-art-c-h-redlinkattach',
-			uncacheable: true,
-			allowAutomaticOkay: false
 		} ],
 		isSinglePage: true
 	} );

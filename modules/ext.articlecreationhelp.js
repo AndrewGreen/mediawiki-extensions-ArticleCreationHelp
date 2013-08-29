@@ -1,17 +1,17 @@
 /**
  *  Main Javascript for ArticleCreationHelp.
  *
- *  Here's how separation of concerns works here. There are one class and
- *  four singletons that know nothing about each other:
+ *  Here's how separation of concerns works here. There are four singletons and
+ *  one class that know nothing about each other:
  *
- *    RedLink           A high-level wrapper for red links
  *    state             Holds info about current state
  *    uiInteractionMgr  Binds handlers for red links, manages low-level interaction
  *    htmlFactory       Produces HTML strings for inclusion in guiders
  * 	  logger            Logs stuff TODO
+ *    RedLink           A high-level wrapper for red links
  *
- *  Finally, there is a presenter that uses all of the above and contains global
- *  logic.
+ *  Finally, there's a presenter that uses all of the above and contains the
+ *  global logic.
  *
  */
 ( function ( $, mw ) {
@@ -24,7 +24,7 @@
 		 * @param {jQuery} jQuery object representing a red link DOM element
 		 *
 		 */
-		function RedLink ($elem) {
+		function RedLink ( $elem ) {
 			var match;
 			this.$elem = $elem;
 
@@ -51,8 +51,8 @@
 		 *
 		 * @returns true if $otherElem represents the same red link as this object, false if not
 		 */
-		RedLink.prototype.same = function ($otherElem) {
-			return this.$elem[0] === $otherElem[0];
+		RedLink.prototype.same = function ( $otherElem ) {
+			return this.$elem[ 0 ] === $otherElem[ 0 ];
 		};
 
 		/**
@@ -60,8 +60,8 @@
 		 *
 		 * @param mark {boolean} To mark or not to mark
 		 */
-		RedLink.prototype.markForGuider = function (mark) {
-			if (mark) {
+		RedLink.prototype.markForGuider = function ( mark ) {
+			if ( mark ) {
 				this.$elem.addClass( this.RED_LINK_ATTACH_CLASS );
 			} else {
 				this.$elem.removeClass( this.RED_LINK_ATTACH_CLASS );
@@ -81,7 +81,7 @@
 			loggedIn = config.wgArticleCreationHelpRedLinks.loggedIn;
 			onSpecialPage = config.wgArticleCreationHelpRedLinks.onSpecialPage;
 
-			// Public API
+			// Public (internal) API
 			return {
 				loggedIn: loggedIn,
 				onSpecialPage: onSpecialPage,
@@ -161,7 +161,7 @@
 				getAnchorFromEvent( event ).attr( 'title', lastOriginalTitleAttr );
 			}
 
-			// Public API
+			// Public (internal) API
 			return {
 				bind: function(showCallback) {
 					self.showCallback = showCallback;
@@ -177,6 +177,7 @@
 		 * and modal dialogue. All public methods return HTML strings.
 		 *
 		 * TODO: Any JS template libs standard with Mediawiki?
+		 * TODO: Make this more loosely coupled
 		 *
 		 * @singleton
 		 */
@@ -208,7 +209,7 @@
 			 *
 			 * @returns {string} HTML for button
 			 */
-			function makeInlineButton( name, options ) {
+			function makeInlineButton( name, id, options ) {
 				var html, url;
 
 				url = options.url || 'javascript:void(0)';
@@ -216,6 +217,8 @@
 				html = [
 					'<a href="',
 					url,
+					'" id="',
+					id,
 					'" class="',
 					CSS_CLASSES.buttonClass,
 					' ',
@@ -226,7 +229,7 @@
 				if (options.callbackString) {
 					html = [
 						html,
-						' onclick="',
+						' onclick="var event = arguments[0] || window.event; event.stopPropagation(); ',
 						options.callbackString,
 						'"'
 					].join('');
@@ -277,6 +280,7 @@
 		            '</span>&nbsp;',
 		            makeInlineButton(
 	            		buttonName,
+	            		'createOne',
 	            		buttonOptions
 	        		),
 					'</p>'
@@ -304,6 +308,7 @@
 					'</span>',
 					makeInlineButton(
 						mw.message( 'articlecreationhelp-firststep-signup' ).text(),
+						'signUp',
 						{ url: createAccountURL }
 					),
 					'<span class="',
@@ -313,6 +318,7 @@
 					'</span>',
 					makeInlineButton(
 						mw.message( 'articlecreationhelp-firststep-login' ).text(),
+						'logIn',
 						{ url: signInURL }
 					),
 					'<span class="',
@@ -323,10 +329,10 @@
 		        ].join('');
 			}
 
-			// Public API
+			// Public (internal) API
 			return {
 
-				makeAnonStep0Desc: function(articleTitle) {
+				makeAnonStep0Desc: function(articleTitle, callbackString) {
 					redTextMeans = makeFirstLine(
 						mw.message( 'articlecreationhelp-redlinks-redtextmeanspre' ).text(),
 						articleTitle,
@@ -336,12 +342,12 @@
 						redTextMeans,
 		            	makeCreateOne(
 		                	mw.message( 'articlecreationhelp-redlinks-learnmore' ).text(),
-		                	{ callbackString: 'mw.libs.guiders.next();' } )
+		                	{ callbackString: callbackString } )
 
 					].join('');
 				},
 
-				makeAnonStep1Desc: function() {
+				makeAnonStep0NewDesc: function() {
 					return makeSignUpOrLogIn();
 				},
 
@@ -373,13 +379,16 @@
 			};
 		}();
 
+		// TODO implement logging
 		logger = function (){}();
 
 		/**
 		 * Presenter. References other top-level objects, not referenced by
-		 * any of them.
+		 * any of them. Provides a public (internal) API at
+		 * mw.articlecreationhelp.internal.
 		 */
-		(function () {
+		mw.articlecreationhelp = {};
+		mw.articlecreationhelp.internal = function () {
 
 			var showTour, TOURS;
 
@@ -393,11 +402,11 @@
 
 			// If we're on the special page and not logged in, just show the
 			// user a modal dialogue.
-			if (state.onSpecialPage && !state.loggedIn) {
-				tourSpec = mw.guidedTour.getTourSpec( TOURS.anonSpecialPageTourName );
-
-				tourSpec.steps[0].description = htmlFactory.makeSpecialPageAnonModal();
-				mw.guidedTour.launchTour( TOURS.anonSpecialPageTourName );
+			if ( state.onSpecialPage && !state.loggedIn ) {
+//				tourSpec = mw.guidedTour.getTourSpec( TOURS.anonSpecialPageTourName );
+//
+//				tourSpec.steps[0].description = htmlFactory.makeSpecialPageAnonModal();
+//				mw.guidedTour.launchTour( TOURS.anonSpecialPageTourName );
 
 				return;
 			}
@@ -406,8 +415,16 @@
 				state.tourActive = false;
 			};
 
+			function anonStep0Transform() {
+
+				tourController = mw.guidedTour.getTourController( TOURS.anonTourName );
+				tourController.description( 0,
+						htmlFactory.makeAnonStep0NewDesc( state.focusedRedLink.articleTitle ),
+						true );
+			}
+
 			showTour = function ( $a ) {
-				var tourSpec;
+				var tourController;
 
 				// Don't launch a tour if one's already going for the same link
 				if ( ( state.tourActive ) && ( state.focusedRedLink.same( $a ) ) ) {
@@ -423,56 +440,49 @@
 				if ( state.focusedRedLink ) {
 					state.focusedRedLink.markForGuider( false );
 				}
-				state.focusedRedLink = new RedLink($a);
+				state.focusedRedLink = new RedLink( $a );
 				state.focusedRedLink.markForGuider( true );
 
 				// TODO deal with other Mediawiki configurations
 				// (for example, wikis where anonymous users can create articles).
 
-				if (state.loggedIn) {
+				if ( state.loggedIn ) {
 
 					// Red links tour for logged in users
 
-					tourSpec = mw.guidedTour.getTourSpec( TOURS.loggedInTourName);
+					tourController = mw.guidedTour.getTourController( TOURS.loggedInTourName );
+					tourController.reset();
 
-					tourSpec.steps[0].description =
-						htmlFactory.makeLoggedInStep0Desc(state.focusedRedLink.articleTitle);
-					tourSpec.steps[0].onClose = closeTourHandler;
+					tourController.description( 0,
+						htmlFactory.makeLoggedInStep0Desc( state.focusedRedLink.articleTitle ) );
 
-					// Launch the tour
-					mw.guidedTour.launchTour( TOURS.loggedInTourName );
+					tourController.launch();
 
 				} else {
 
 					// Red links tour for anonymous users
 
-					// Set the descriptions in callouts (set programmatically because
-					// they contain the article name).
-					tourSpec = mw.guidedTour.getTourSpec( TOURS.anonTourName );
+					tourController = mw.guidedTour.getTourController( TOURS.anonTourName );
+					tourController.reset();
 
-					tourSpec.steps[0].description =
-						htmlFactory.makeAnonStep0Desc(state.focusedRedLink.articleTitle);
+					tourController.description( 0,
+						htmlFactory.makeAnonStep0Desc(
+						state.focusedRedLink.articleTitle,
+						'mw.articlecreationhelp.internal.anonStep0Transform();') );
 
-					tourSpec.steps[0].onClose = closeTourHandler;
-
-					tourSpec.steps[1].description =
-						htmlFactory.makeAnonStep1Desc();
-
-					tourSpec.steps[1].onClose = closeTourHandler;
-
-					// Launch the tour
-					mw.guidedTour.launchTour( TOURS.anonTourName );
+					tourController.launch();
 				}
 			};
 
 			uiInteractionMgr.bind(showTour);
-		})();
+
+			// Public (internal) API, at mw.articlecreationhelp.internal
+			return {
+				closeTourHandler: closeTourHandler,
+				anonStep0Transform: anonStep0Transform
+			};
+		}();
 
 	} );
 
 } ( jQuery, mediaWiki ) );
-
-// NOTES
-//returnToListUri = new mw.Uri( mw.util.wikiGetlink( 'Special:GettingStarted' ) )
-//.extend( {source: 'navbar-return'} );
-//mw.loader.load to load external stuff
