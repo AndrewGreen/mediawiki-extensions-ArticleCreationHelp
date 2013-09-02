@@ -1,7 +1,7 @@
 /**
  *  Main Javascript for ArticleCreationHelp.
  *
- *  Here's how separation of concerns works here. There are four singletons and
+ *  Here's how the separation of concerns works here. There are four singletons and
  *  one class that know nothing about each other:
  *
  *    state             Holds info about current state
@@ -21,7 +21,7 @@
 		/**
 		 * Higher-level wrapper for red links.
 		 *
-		 * @param {jQuery} jQuery object representing a red link DOM element
+		 * @param {jQuery} $elem jQuery object representing a red link DOM element
 		 *
 		 */
 		function RedLink ( $elem ) {
@@ -35,6 +35,7 @@
 			// Extract article title
 			// TODO Find a better way to do this, maybe with parser hooks?
 			// Still, it seems to work.
+			// TODO Leaves off namespace
 			match = this.$elem.attr( 'href' ).match( /title=([^&]*)/ );
 			if (match && match.length > 1) {
 				this.articleTitle =  match[1].replace( /_/g, " " );
@@ -47,7 +48,7 @@
 		/**
 		 * Check if this red link is the same as the jQuery object passed
 		 *
-		 * @param $otherElem {jQuery} jQuery object
+		 * @param {jQuery} $otherElem jQuery object
 		 *
 		 * @returns true if $otherElem represents the same red link as this object, false if not
 		 */
@@ -58,7 +59,7 @@
 		/**
 		 * Mark a red link for attachment by a guider.
 		 *
-		 * @param mark {boolean} To mark or not to mark
+		 * @param {boolean} mark To mark or not to mark
 		 */
 		RedLink.prototype.markForGuider = function ( mark ) {
 			if ( mark ) {
@@ -73,7 +74,7 @@
 		 *
 		 * @singleton
 		 */
-		state = function () {
+		state = ( function () {
 			var config, loggedIn, onSpecialPage;
 
 			// TODO Simplify getting stuff from config?
@@ -88,18 +89,14 @@
 				tourActive: false,
 				focusedRedLink: null
 			};
-		}();
+		}() );
 
 		/**
-		 * Sets up and manages low-level events on red links,
-		 * calling showCallback($elem) when a guider should be shown over
-		 * the red link represented by $elem (a jQuery object representing a DOM element).
-		 *
-		 * @param showCallback {function($elem)} function to show a guider over $elem
+		 * Sets up and manages low-level events on red links.
 		 *
 		 * @singleton
 		 */
-		uiInteractionMgr = function () {
+		uiInteractionMgr = ( function () {
 			var hoverTimer, lastOriginalTitleAttr, $redLinks, HOVER_TIMEOUT_MS,
 				self;
 
@@ -163,6 +160,14 @@
 
 			// Public (internal) API
 			return {
+				/**
+				 * Bind handlers to UI, calling showCallback($elem) when a guider
+				 * should be shown over the red link represented by $elem
+				 * (a jQuery object wrapping a single DOM element).
+				 *
+				 * @param {Function} showCallback function to show a guider over
+				 *     a red link
+				 */
 				bind: function(showCallback) {
 					self.showCallback = showCallback;
 					$redLinks.click(click);
@@ -170,23 +175,23 @@
 				},
 				currentGuiderElem: null
 			};
-		}();
+		}() );
 
 		/**
-		 * High-level interface for creating HTML for guiders
-		 * and modal dialogue. All public methods return HTML strings.
+		 * High-level interface for creating HTML for guiders. All public
+		 * methods return HTML strings.
 		 *
 		 * TODO: Any JS template libs standard with Mediawiki?
 		 * TODO: Make this more loosely coupled
 		 *
 		 * @singleton
 		 */
-		htmlFactory = function () {
+		htmlFactory = ( function () {
 			var CSS_CLASSES;
 
+			// TODO change "callout" to "guider" in css classes
 			/**
 			 *  CSS classes. Must coordinate with articlecreationhelpredlinks.css.
-			 *  redLinkAttach must also coordinate with tour.
 			 */
 			CSS_CLASSES = {
 				'titleInCalloutClass': 'ext-art-c-h-title-in-callout',
@@ -202,10 +207,11 @@
 			 *
 			 * @private
 			 *
-			 * @param name {string} the button's text
-			 * @param options {Object} options for button
-			 * @param options.url {string} The URL the button should link to
-			 * @param options.callbackString {string} a string with js code to call on click
+			 * @param {String} name the button's text
+			 * @param {Object} options options for button
+			 * @param {String} options.url The URL the button should link to
+			 * @param {String} options.callbackString a string with js code to
+			 *     call on click
 			 *
 			 * @returns {string} HTML for button
 			 */
@@ -332,6 +338,16 @@
 			// Public (internal) API
 			return {
 
+				/**
+				 * Create HTML for the first guider over red links for
+				 * anonymous users.
+				 *
+				 * @param {String} articleTitle The title of the (non-existent)
+				 *    article referred to by the red link that the guider points
+				 *    to.
+				 * @param {String} callbackString
+				 * @returns {String} HTML string
+				 */
 				makeAnonStep0Desc: function(articleTitle, callbackString) {
 					redTextMeans = makeFirstLine(
 						mw.message( 'articlecreationhelp-redlinks-redtextmeanspre' ).text(),
@@ -347,10 +363,26 @@
 					].join('');
 				},
 
+				/**
+				 * Create HTML for the second guider over red links for
+				 * anonymous users.
+				 *
+				 * @returns {String} HTML
+				 */
 				makeAnonStep1Desc: function() {
 					return makeSignUpOrLogIn();
 				},
 
+				/**
+				 * Create HTML for the guider over red links for
+				 * logged-in users.
+				 *
+				 * @param {String} articleTitle The title of the (non-existent)
+				 *    article referred to by the red link that the guider points
+				 *    to.
+				 * @returns {String} HTML string
+				 *
+				 */
 				makeLoggedInStep0Desc: function(articleTitle) {
 					noArticle = makeFirstLine(
 						mw.message( 'articlecreationhelp-redlinks-noarticlepre' ).text(),
@@ -371,24 +403,20 @@
 		                	{ url: createArticleURL } )
 
 					].join('');
-				},
-
-				makeSpecialPageAnonModal: function() {
-					return makeSignUpOrLogIn();
 				}
 			};
-		}();
+		}() );
 
 		// TODO implement logging
-		logger = function (){}();
+		logger = ( function (){}() );
 
 		/**
-		 * Presenter. References other top-level objects, not referenced by
-		 * any of them. Provides a public (internal) API at
-		 * mw.articlecreationhelp.internal.
+		 * Presenter. Uses other top-level objects, but is not referenced by
+		 * any of them. Provides an API (internal, i.e., not intended for use
+		 * outside  this extension) at mw.articlecreationhelp.internal.
 		 */
 		mw.articlecreationhelp = {};
-		mw.articlecreationhelp.internal = function () {
+		mw.articlecreationhelp.internal = ( function () {
 
 			var showTour, TOURS;
 
@@ -423,7 +451,7 @@
 				state.focusedRedLink = new RedLink( $a );
 				state.focusedRedLink.markForGuider( true );
 
-				// TODO deal with other Mediawiki configurations
+				// TODO deal with other Mediawiki configurations,
 				// (for example, wikis where anonymous users can create articles).
 
 				if ( state.loggedIn ) {
@@ -434,9 +462,9 @@
 					tourController.reset();
 
 					tourController.modifyStep( 0, {
-							description: htmlFactory.makeLoggedInStep0Desc(
-								state.focusedRedLink.articleTitle )
-						} );
+						description: htmlFactory.makeLoggedInStep0Desc(
+							state.focusedRedLink.articleTitle )
+					} );
 
 					tourController.launch();
 
@@ -462,13 +490,13 @@
 				}
 			};
 
-			uiInteractionMgr.bind(showTour);
+			uiInteractionMgr.bind( showTour );
 
-			// Public (internal) API, at mw.articlecreationhelp.internal
+			// API (intended for internal use) at mw.articlecreationhelp.internal
 			return {
 				closeTourHandler: closeTourHandler,
 			};
-		}();
+		}() );
 
 	} );
 
