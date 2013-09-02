@@ -9,32 +9,44 @@ class SpecialArticleCreationHelp extends SpecialPage {
 		
 		global $wgScript, $wgSitename, $wgUser;
 		
-		// If the user isn't allow to create a page, redirect to permissions error page
+		// If the user isn't allow to create a page, redirect to an error page
 		if ( !$wgUser->isAllowed('createpage') ) {
-			// TODO Do this properly, via Title.php
-			throw new PermissionsError( 'createpage', array( array( 'nocreate-loggedin' ) ) );
+
+			// TODO is there a better way to throw errors here?
+			if ( $wgUser->isAnon ) {
+				throw new UserNotLoggedIn( 'articlecreationhelp-specialpage-error-login' );
+			} else {
+				throw new PermissionsError( 'createpage', array( array( 'nocreate-loggedin' ) ) );
+			}
 		}
 		
 		// Required to initialize output page object $wgOut
 		$this->setHeaders();
 		
-		// Get handles for output to page and input from URL parameters 
-		$output = $this->getOutput();
+		// Get handle for input from URL parameters 
 		$request = $this->getRequest();
 
-		// Add modules
-		$output->addModules( array(
-			'ext.articlecreationhelp.specialpage',
- 			'ext.guidedTour.tour.articlecreationhelpspecialpageanon',
-		) );
-		
-		// TODO Error handling if we don't get the parameters we're expecting
-		
 		// The page to retreat<<<<<<<return to
 		$returnTo = $request->getText('returnto');
 		
 		// The article to create
 		$newTitle = $request->getText('newtitle');
+
+		// Throw an error if we don't have both parameters
+		// TODO improve this--error page title says 'Bad title'
+		if ( !$returnTo || !$newTitle ) {
+			throw new ErrorPageError( 'articlecreationhelp-specialpage-error-pagetitle', 
+					'articlecreationhelp-specialpage-error-content' );
+		}
+		
+		// Get handles for output to page
+		$output = $this->getOutput();
+
+		// Add modules
+		$output->addModules( array(
+				'ext.articlecreationhelp.specialpage',
+				'ext.guidedTour.tour.articlecreationhelpspecialpageanon',
+		) );
 		
 		// Special page title
 		$output->setPageTitle( 

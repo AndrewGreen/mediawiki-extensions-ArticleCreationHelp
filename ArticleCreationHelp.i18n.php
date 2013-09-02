@@ -40,7 +40,10 @@ $messages['en'] = array(
 	'articlecreationhelp-specialpage-sandbox-header'=> 'Create a Draft in Your Sandbox',
 	'articlecreationhelp-specialpage-sandbox-text'=> 'It’s easy move drafts to the main encyclopedia whenever you’re ready.',
 	'articlecreationhelp-specialpage-returnpre' => 'Or, if you’d rather not create this article now, you can go back to ',
-	'articlecreationhelp-specialpage-returnpost' => '.'
+	'articlecreationhelp-specialpage-returnpost' => '.',
+	'articlecreationhelp-specialpage-error-login' => 'You must be logged in to create an article.',
+	'articlecreationhelp-specialpage-error-pagetitle' => 'Oops!!',
+	'articlecreationhelp-specialpage-error-content' => 'An error ocurred... Sorry.',
 );
 
 $messages['qqq'] = array(
