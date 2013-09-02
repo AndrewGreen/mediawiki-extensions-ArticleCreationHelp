@@ -7,7 +7,8 @@
  * Bits and pieces were pillaged<<<<<<<<adapted from the GettingStarted and
  * GuidedTour extensions.
  * 
- * For more information, please see ...
+ * For more information, please see:
+ * https://www.mediawiki.org/w/index.php?title=Extension:ArticleCreationHelp
  * 
  * @file
  * @author Andrew Green andrew.green.df@gmail.com
@@ -46,12 +47,6 @@ $wgAutoloadClasses += array(
 
 // TODO event logging for A/B testing
 
-// Repeated module info
-$articleCreationHelpModuleInfo = array(
-		'localBasePath' => __DIR__ . '/modules',
-		'remoteExtPath' => 'ArticleCreationHelp/modules',
-);
-
 // Schema for event logging
 $articleCreationHelpSchemaModuleName = 'schema.' . ArticleCreationHelpHooks::SCHEMA_NAME;
 
@@ -61,23 +56,11 @@ $wgResourceModules[ $articleCreationHelpSchemaModuleName ] = array(
 		'revision' => ArticleCreationHelpHooks::SCHEMA_REV_ID,
 );
 
-// Tour for red links for anonymous users
-$wgResourceModules['ext.guidedTour.tour.articlecreationhelpredlinksanon'] = array(
-		'scripts' => 'ext.articlecreationhelp.redlinks.anon.js',
-		'dependencies' => array(
-				'ext.guidedTour',
-				'ext.articlecreationhelp',
-		),
-) + $articleCreationHelpModuleInfo;
-
-// Tour for red links for logged in users
-$wgResourceModules['ext.guidedTour.tour.articlecreationhelpredlinksloggedin'] = array(
-		'scripts' => 'ext.articlecreationhelp.redlinks.loggedin.js',
-		'dependencies' => array(
-				'ext.guidedTour',
-				'ext.articlecreationhelp',
-		),
-) + $articleCreationHelpModuleInfo;
+// Module info used repeatedly below
+$articleCreationHelpModuleInfo = array(
+		'localBasePath' => __DIR__ . '/modules',
+		'remoteExtPath' => 'ArticleCreationHelp/modules',
+);
 
 // Global module		
 $wgResourceModules[ 'ext.articlecreationhelp' ] = array(
@@ -99,6 +82,24 @@ $wgResourceModules[ 'ext.articlecreationhelp' ] = array(
 		'articlecreationhelp-firststep-or',
 		'articlecreationhelp-firststep-login',
 		'articlecreationhelp-firststep-post',
+	),
+) + $articleCreationHelpModuleInfo;
+
+// Tour for red links for anonymous users
+$wgResourceModules['ext.guidedTour.tour.articlecreationhelpredlinksanon'] = array(
+	'scripts' => 'ext.articlecreationhelp.redlinks.anon.js',
+	'dependencies' => array(
+			'ext.guidedTour',
+			'ext.articlecreationhelp',
+	),
+) + $articleCreationHelpModuleInfo;
+
+// Tour for red links for logged in users
+$wgResourceModules['ext.guidedTour.tour.articlecreationhelpredlinksloggedin'] = array(
+	'scripts' => 'ext.articlecreationhelp.redlinks.loggedin.js',
+	'dependencies' => array(
+			'ext.guidedTour',
+			'ext.articlecreationhelp',
 	),
 ) + $articleCreationHelpModuleInfo;
 
