@@ -347,7 +347,7 @@
 					].join('');
 				},
 
-				makeAnonStep0NewDesc: function() {
+				makeAnonStep1Desc: function() {
 					return makeSignUpOrLogIn();
 				},
 
@@ -415,14 +415,6 @@
 				state.tourActive = false;
 			};
 
-			function anonStep0Transform() {
-
-				tourController = mw.guidedTour.getTourController( TOURS.anonTourName );
-				tourController.description( 0,
-						htmlFactory.makeAnonStep0NewDesc( state.focusedRedLink.articleTitle ),
-						true );
-			}
-
 			showTour = function ( $a ) {
 				var tourController;
 
@@ -453,8 +445,10 @@
 					tourController = mw.guidedTour.getTourController( TOURS.loggedInTourName );
 					tourController.reset();
 
-					tourController.description( 0,
-						htmlFactory.makeLoggedInStep0Desc( state.focusedRedLink.articleTitle ) );
+					tourController.modifyStep( 0, {
+							description: htmlFactory.makeLoggedInStep0Desc(
+								state.focusedRedLink.articleTitle )
+						} );
 
 					tourController.launch();
 
@@ -465,10 +459,16 @@
 					tourController = mw.guidedTour.getTourController( TOURS.anonTourName );
 					tourController.reset();
 
-					tourController.description( 0,
-						htmlFactory.makeAnonStep0Desc(
-						state.focusedRedLink.articleTitle,
-						'mw.articlecreationhelp.internal.anonStep0Transform();') );
+					tourController.modifyStep( 0, {
+						description: htmlFactory.makeAnonStep0Desc(
+							state.focusedRedLink.articleTitle,
+							'mw.libs.guiders.next();' )
+					} );
+
+					tourController.modifyStep( 1, {
+						description: htmlFactory.makeAnonStep1Desc( state.focusedRedLink.articleTitle ),
+					} );
+
 
 					tourController.launch();
 				}
@@ -479,7 +479,6 @@
 			// Public (internal) API, at mw.articlecreationhelp.internal
 			return {
 				closeTourHandler: closeTourHandler,
-				anonStep0Transform: anonStep0Transform
 			};
 		}();
 
