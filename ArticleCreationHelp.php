@@ -120,4 +120,3 @@ $wgExtensionMessagesFiles[ 'ArticleCreationHelpAlias' ] = __DIR__ . '/ArticleCre
 
 // Special Page
 $wgSpecialPages[ 'ArticleCreationHelp' ] = 'SpecialArticleCreationHelp';
-$wgSpecialPageGroups[ 'ArticleCreationHelp' ] = 'users';
