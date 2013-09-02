@@ -110,12 +110,6 @@ $wgResourceModules[ 'ext.articlecreationhelp.specialpage' ] = array(
 		),
 ) + $articleCreationHelpModuleInfo;
 
-// "Tour" for special page for anonymous users
-$wgResourceModules['ext.guidedTour.tour.articlecreationhelpspecialpageanon'] = array(
-		'scripts' => 'ext.articlecreationhelp.specialpage.anon.js',
-		'dependencies' => 'ext.guidedTour',
-) + $articleCreationHelpModuleInfo;
-
 // Hooks
 $wgHooks[ 'MakeGlobalVariablesScript' ][] = 'ArticleCreationHelpHooks::onMakeGlobalVariablesScript';
 $wgHooks[ 'BeforePageDisplay' ][] = 'ArticleCreationHelpHooks::onBeforePageDisplay';

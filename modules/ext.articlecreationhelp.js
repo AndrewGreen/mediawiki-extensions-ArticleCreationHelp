@@ -397,19 +397,7 @@
 			TOURS = {
 				'anonTourName':	'articlecreationhelpredlinksanon',
 				'loggedInTourName':	'articlecreationhelpredlinksloggedin',
-				'anonSpecialPageTourName':	'articlecreationhelpspecialpageanon',
 			};
-
-			// If we're on the special page and not logged in, just show the
-			// user a modal dialogue.
-			if ( state.onSpecialPage && !state.loggedIn ) {
-//				tourSpec = mw.guidedTour.getTourSpec( TOURS.anonSpecialPageTourName );
-//
-//				tourSpec.steps[0].description = htmlFactory.makeSpecialPageAnonModal();
-//				mw.guidedTour.launchTour( TOURS.anonSpecialPageTourName );
-
-				return;
-			}
 
 			function closeTourHandler () {
 				state.tourActive = false;

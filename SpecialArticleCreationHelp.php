@@ -7,7 +7,13 @@ class SpecialArticleCreationHelp extends SpecialPage {
 	
 	public function execute( $parameter ) {
 		
-		global $wgScript, $wgSitename;
+		global $wgScript, $wgSitename, $wgUser;
+		
+		// If the user isn't allow to create a page, redirect to permissions error page
+		if ( !$wgUser->isAllowed('createpage') ) {
+			// TODO Do this properly, via Title.php
+			throw new PermissionsError( 'createpage', array( array( 'nocreate-loggedin' ) ) );
+		}
 		
 		// Required to initialize output page object $wgOut
 		$this->setHeaders();
