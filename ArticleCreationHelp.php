@@ -68,6 +68,7 @@ $wgResourceModules[ 'ext.articlecreationhelp' ] = array(
 	'styles' => 'ext.articlecreationhelp.css',
 	'dependencies' => array(
 		'ext.guidedTour',
+		'mediawiki.Uri',
 	),
 	'messages' => array(
 		'articlecreationhelp-redlinks-redtextmeanspre',

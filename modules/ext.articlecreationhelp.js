@@ -177,12 +177,15 @@
 			};
 		}() );
 
+		// TODO: Any JS template libs standard with Mediawiki?
 		/**
 		 * High-level interface for creating HTML for guiders. All public
 		 * methods return HTML strings.
 		 *
-		 * TODO: Any JS template libs standard with Mediawiki?
-		 * TODO: Make this more loosely coupled
+		 * Note regarding separation of concerns: this object is allowed to work
+		 * directly with messages (via mw.message) but does not know the URLs
+		 * or callbacks for changing state, which are provided by the
+		 * caller (the presenter).
 		 *
 		 * @singleton
 		 */
@@ -298,11 +301,7 @@
 			 *
 			 * @private
 			 */
-			function makeSignUpOrLogIn() {
-				var createAccountURL, signInURL;
-
-				createAccountURL = mw.config.get( 'wgScript' ) + '?title=Special:UserLogin&type=signup';
-				signInURL = mw.util.wikiGetlink( 'Special:UserLogin' );
+			function makeSignUpOrLogIn(signUpURL, logInURL) {
 
 				return [
 					'<p class="',
@@ -315,7 +314,7 @@
 					makeInlineButton(
 						mw.message( 'articlecreationhelp-firststep-signup' ).text(),
 						'signUp',
-						{ url: createAccountURL }
+						{ url: signUpURL }
 					),
 					'<span class="',
 					CSS_CLASSES.secondLineInCallout,
@@ -325,7 +324,7 @@
 					makeInlineButton(
 						mw.message( 'articlecreationhelp-firststep-login' ).text(),
 						'logIn',
-						{ url: signInURL }
+						{ url: logInURL }
 					),
 					'<span class="',
 					CSS_CLASSES.secondLineInCallout,
@@ -345,10 +344,11 @@
 				 * @param {String} articleTitle The title of the (non-existent)
 				 *    article referred to by the red link that the guider points
 				 *    to.
-				 * @param {String} callbackString
+				 * @param {String} learnMoreCallbackStr String with onClick callback
+				 *    for "Learn More" button.
 				 * @returns {String} HTML string
 				 */
-				makeAnonStep0Desc: function(articleTitle, callbackString) {
+				makeAnonStep0Desc: function(articleTitle, learnMoreCallbackStr) {
 					redTextMeans = makeFirstLine(
 						mw.message( 'articlecreationhelp-redlinks-redtextmeanspre' ).text(),
 						articleTitle,
@@ -358,7 +358,7 @@
 						redTextMeans,
 		            	makeCreateOne(
 		                	mw.message( 'articlecreationhelp-redlinks-learnmore' ).text(),
-		                	{ callbackString: callbackString } )
+		                	{ callbackString: learnMoreCallbackStr } )
 
 					].join('');
 				},
@@ -367,10 +367,12 @@
 				 * Create HTML for the second guider over red links for
 				 * anonymous users.
 				 *
+				 * @param {String} signUpURL URL for the "Create an account" button
+				 * @param {String} logInURL URL for the "Log in" button
 				 * @returns {String} HTML
 				 */
-				makeAnonStep1Desc: function() {
-					return makeSignUpOrLogIn();
+				makeAnonStep1Desc: function(signUpURL, logInURL) {
+					return makeSignUpOrLogIn(signUpURL, logInURL);
 				},
 
 				/**
@@ -380,21 +382,15 @@
 				 * @param {String} articleTitle The title of the (non-existent)
 				 *    article referred to by the red link that the guider points
 				 *    to.
+				 * @param {String} createArticleURL URL for the "Create article" button
 				 * @returns {String} HTML string
 				 *
 				 */
-				makeLoggedInStep0Desc: function(articleTitle) {
+				makeLoggedInStep0Desc: function(articleTitle, createArticleURL) {
 					noArticle = makeFirstLine(
 						mw.message( 'articlecreationhelp-redlinks-noarticlepre' ).text(),
 						articleTitle,
 						mw.message( 'articlecreationhelp-redlinks-noarticlepost' ).text() );
-
-					createArticleURL =
-						mw.config.get( 'wgScript' )
-						+ '?title=Special:ArticleCreationHelp&newtitle='
-						+ articleTitle
-						+ '&returnto='
-						+ mw.config.get( 'wgPageName' );
 
 					return [
 						noArticle,
@@ -418,7 +414,7 @@
 		mw.articlecreationhelp = {};
 		mw.articlecreationhelp.internal = ( function () {
 
-			var showTour, TOURS;
+			var showTour, TOURS, signUpURL, logInURL;
 
 			// Tour names: coordinate with ArticleCreationHelp.php and
 			// .js files for tours.
@@ -427,12 +423,19 @@
 				'loggedInTourName':	'articlecreationhelpredlinksloggedin',
 			};
 
+			// set up sign up and sign in URLs, which don't change depending
+			// on the red link we're over
+			signUpURL = new mw.Uri( mw.util.wikiGetlink( 'Special:UserLogin' ) )
+				.extend( { type: 'signup' } );
+
+			logInURL = mw.util.wikiGetlink( 'Special:UserLogin' );
+
 			function closeTourHandler () {
 				state.tourActive = false;
 			};
 
 			showTour = function ( $a ) {
-				var tourController;
+				var tourController, articleTitle, createArticleURL;
 
 				// Don't launch a tour if one's already going for the same link
 				if ( ( state.tourActive ) && ( state.focusedRedLink.same( $a ) ) ) {
@@ -450,6 +453,7 @@
 				}
 				state.focusedRedLink = new RedLink( $a );
 				state.focusedRedLink.markForGuider( true );
+				articleTitle = state.focusedRedLink.articleTitle;
 
 				// TODO deal with other Mediawiki configurations,
 				// (for example, wikis where anonymous users can create articles).
@@ -461,9 +465,16 @@
 					tourController = mw.guidedTour.getTourController( TOURS.loggedInTourName );
 					tourController.reset();
 
+					createArticleURL = new mw.Uri( mw.util.wikiGetlink( 'Special:ArticleCreationHelp' ) )
+						.extend( {
+							newtitle: articleTitle,
+							returnto: mw.config.get( 'wgPageName' )
+						}
+					);
+
 					tourController.modifyStep( 0, {
 						description: htmlFactory.makeLoggedInStep0Desc(
-							state.focusedRedLink.articleTitle )
+							articleTitle, createArticleURL )
 					} );
 
 					tourController.launch();
@@ -477,14 +488,15 @@
 
 					tourController.modifyStep( 0, {
 						description: htmlFactory.makeAnonStep0Desc(
-							state.focusedRedLink.articleTitle,
+							articleTitle,
 							'mw.libs.guiders.next();' )
 					} );
 
 					tourController.modifyStep( 1, {
-						description: htmlFactory.makeAnonStep1Desc( state.focusedRedLink.articleTitle ),
-					} );
+						description: htmlFactory.makeAnonStep1Desc(
+						signUpURL, logInURL),
 
+					} );
 
 					tourController.launch();
 				}
