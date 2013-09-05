@@ -19,7 +19,7 @@
 		var state, uiInteractionMgr, htmlFactory, logger;
 
 		/**
-		 * Higher-level wrapper for red links.
+		 * Higher-level wrapper class for red links.
 		 *
 		 * @param {jQuery} $elem jQuery object representing a red link DOM element
 		 *
@@ -177,7 +177,6 @@
 			};
 		}() );
 
-		// TODO: Any JS template libs standard with Mediawiki?
 		/**
 		 * High-level interface for creating HTML for guiders. All public
 		 * methods return HTML strings.
@@ -187,23 +186,117 @@
 		 * or callbacks for changing state, which are provided by the
 		 * caller (the presenter).
 		 *
+		 * TODO: This class uses a simple, inbuilt templating mechanism.
+		 * If in the future MW includes a standard JS templating system, that should
+		 * be used instead.
+		 *
 		 * @singleton
 		 */
 		htmlFactory = ( function () {
-			var CSS_CLASSES;
+			var templates = {
+				firstLine:
+					'<p class="ext-art-c-h-par-in-callout ext-art-c-h-1st-line-in-callout">' +
+					'    {pre}<span class="ext-art-c-h-title-in-callout">{title}</span>{post}' +
+					'</p>',
 
-			// TODO change "callout" to "guider" in css classes
-			/**
-			 *  CSS classes. Must coordinate with articlecreationhelpredlinks.css.
-			 */
-			CSS_CLASSES = {
-				'titleInCalloutClass': 'ext-art-c-h-title-in-callout',
-				'firstLineInCallout': 'ext-art-c-h-1st-line-in-callout',
-				'secondLineInCallout': 'ext-art-c-h-2nd-line-in-callout',
-				'paragraphInCalloutClass': 'ext-art-c-h-par-in-callout',
-				'buttonClass': 'mw-ui-button',
-				'inlineButtonClass': 'mw-ui-primary ext-art-c-h-inline-button'
+				createOne:
+					'<p class="ext-art-c-h-par-in-callout">' +
+					'    <span class="ext-art-c-h-2nd-line-in-callout">{msg}</span>&nbsp;{button}' +
+					'</p>',
+
+				signUpOrLogIn:
+					'<p class="ext-art-c-h-par-in-callout">' +
+					'    <span class="ext-art-c-h-2nd-line-in-callout">{pre}</span>' +
+					'    {signUpBtn}' +
+					'    <span class="ext-art-c-h-2nd-line-in-callout">{or}</span>' +
+					'    {logInBtn}' +
+					'    <span class="ext-art-c-h-2nd-line-in-callout">{post}</span>' +
+					'</p>',
+
+				inlineBtnNoCallback:
+					'<a' +
+					'    href="{url}"' +
+					'    id="{id}"' +
+					'    class="mw-ui-button mw-ui-primary ext-art-c-h-inline-button">' +
+					'    {name}' +
+					'</a>',
+
+				inlineBtnWCallback:
+					'<a' +
+					'    href="{url}"' +
+					'    id="{id}"' +
+					'    class="mw-ui-button mw-ui-primary ext-art-c-h-inline-button"' +
+					'    onclick="{callbackString}">' +
+					'    {name}' +
+					'</a>'
 			};
+
+			// prepare templates for execution
+			for (t in templates) {
+				templates[t] = prepareTemplate(templates[t]);
+			}
+
+			/**
+			 * Generate HTML for the "no article about" paragraphs.
+			 */
+			function makeFirstLine( pre, title, post ) {
+				var vars = {};
+
+				vars.pre = pre;
+				vars.title = title;
+				vars.post = post;
+
+				return executeTemplate( 'firstLine', vars );
+			}
+
+			/**
+			 * HTML of the "would you like to create one?" paragraph
+			 *
+			 * @private
+			 */
+			function makeCreateOne(buttonName, buttonOptions) {
+				var vars = {};
+
+				vars.button = makeInlineButton(
+					buttonName,
+					'createOne',
+					buttonOptions
+				);
+
+				vars.msg = mw.message( 'articlecreationhelp-redlinks-liketocreateone' ).text();
+
+				return executeTemplate( 'createOne', vars );
+			}
+
+			/**
+			 * HTML for the "please sign up or log in" paragraph
+			 *
+			 * @private
+			 */
+			function makeSignUpOrLogIn(signUpURL, logInURL) {
+
+				var vars = {};
+
+				vars.pre = mw.message( 'articlecreationhelp-firststep-pre' ).text();
+
+				vars.signUpBtn = makeInlineButton(
+					mw.message( 'articlecreationhelp-firststep-signup' ).text(),
+					'signUp',
+					{ url: signUpURL }
+				);
+
+				vars.or = mw.message( 'articlecreationhelp-firststep-or' ).text();
+
+				vars.logInBtn = makeInlineButton(
+					mw.message( 'articlecreationhelp-firststep-login' ).text(),
+					'logIn',
+					{ url: logInURL }
+				);
+
+				vars.post = mw.message( 'articlecreationhelp-firststep-post' ).text();
+
+				return executeTemplate( 'signUpOrLogIn', vars );
+			}
 
 			/**
 			 * HTML of an inline button.
@@ -219,119 +312,90 @@
 			 * @returns {string} HTML for button
 			 */
 			function makeInlineButton( name, id, options ) {
-				var html, url;
-
-				url = options.url || 'javascript:void(0)';
-
-				html = [
-					'<a href="',
-					url,
-					'" id="',
-					id,
-					'" class="',
-					CSS_CLASSES.buttonClass,
-					' ',
-					CSS_CLASSES.inlineButtonClass,
-					'"'
-				].join('');
+				var vars = {};
+				vars.url = options.url || 'javascript:void(0)';
+				vars.name = name;
+				vars.id = id;
 
 				if (options.callbackString) {
-					html = [
-						html,
-						' onclick="var event = arguments[0] || window.event; event.stopPropagation(); ',
-						options.callbackString,
-						'"'
-					].join('');
+					vars.callbackString =
+						'var event = arguments[0] || window.event; event.stopPropagation();' +
+						options.callbackString;
+
+					return executeTemplate( 'inlineBtnWCallback', vars );
+
+				} else {
+					return executeTemplate( 'inlineBtnNoCallback', vars );
+				}
+			}
+
+			/**
+			 * Produce output from a template.
+			 *
+			 * @private
+			 *
+			 * @param {String} id id of the template to use
+			 * @param {Object} vars object whose properties are variables to be
+			 *     used in the template
+			 */
+			function executeTemplate(id, vars) {
+				return eval(templates[id]);
+			}
+
+			/**
+			 * Turn a readable template string into JS code to be run
+			 * using eval().
+			 *
+			 * @private
+			 *
+			 * @param {String} the template string to prepare
+			 */
+			function prepareTemplate(templStr) {
+				var compiledTmpl, lastIdx;
+
+				// strip out newlines, not useful in HTML anyway
+				templStr = templStr.replace(/\n/g, '');
+
+				lastIdx = 0;
+				compiledTmpl = templStr.replace
+					(/([^{}]*){([^{}]*)}/g,
+					function(m, lit, varStr, offset){
+						var newStr;
+						if (lit) {
+							newStr = makeTemplateLit(lit) + ',';
+						} else {
+							newStr = '';
+						}
+
+						if (varStr) {
+							newStr += 'vars[\'' + $.trim(varStr) + '\'],';
+						}
+
+						lastIdx += lit.length + varStr.length + 2;
+						return newStr;
+				} );
+
+				if (lastIdx < templStr.length) {
+					var lastLit = templStr.slice(lastIdx, templStr.length);
+					compiledTmpl = compiledTmpl.slice(
+						0, compiledTmpl.length - lastLit.length)
+						+ makeTemplateLit(lastLit);
 				}
 
-				return [
-					html,
-					'>',
-					name,
-					'</a>'
-		        ].join('');
+				// remove trailing comma and wrap as an array join
+				compiledTmpl = compiledTmpl.replace(/\,$/,'');
+				compiledTmpl = '[' + compiledTmpl + '].join(\'\')';
+
+				return compiledTmpl;
 			}
 
 			/**
-			 * Generate HTML for the "no article about" paragraphs.
-			 */
-			function makeFirstLine( pre, title, post ) {
-				return [
-		            '<p class="',
-		            CSS_CLASSES.paragraphInCalloutClass,
-		            ' ',
-		            CSS_CLASSES.firstLineInCallout,
-		            '">',
-					pre,
-					'<span class="',
-					CSS_CLASSES.titleInCalloutClass,
-					'">',
-					title,
-					'</span>',
-					post,
-					'</p>'
-				].join('');
-			}
-
-			/**
-			 * HTML of the "would you like to create one?" paragraph
+			 * Format a string for inclusion as a literal in a template.
 			 *
 			 * @private
 			 */
-			function makeCreateOne(buttonName, buttonOptions) {
-				return [
-		            '<p class="',
-		            CSS_CLASSES.paragraphInCalloutClass,
-		            '"><span class="',
-		            CSS_CLASSES.secondLineInCallout,
-		            '">',
-		            mw.message( 'articlecreationhelp-redlinks-liketocreateone' ).text(),
-		            '</span>&nbsp;',
-		            makeInlineButton(
-	            		buttonName,
-	            		'createOne',
-	            		buttonOptions
-	        		),
-					'</p>'
-				].join('');
-			}
-
-			/**
-			 * HTML for the "please sign up or log in" paragraph
-			 *
-			 * @private
-			 */
-			function makeSignUpOrLogIn(signUpURL, logInURL) {
-
-				return [
-					'<p class="',
-					CSS_CLASSES.paragraphInCalloutClass,
-					'"><span class="',
-					CSS_CLASSES.secondLineInCallout,
-					'">',
-					mw.message( 'articlecreationhelp-firststep-pre' ).text(),
-					'</span>',
-					makeInlineButton(
-						mw.message( 'articlecreationhelp-firststep-signup' ).text(),
-						'signUp',
-						{ url: signUpURL }
-					),
-					'<span class="',
-					CSS_CLASSES.secondLineInCallout,
-					'">',
-					mw.message( 'articlecreationhelp-firststep-or' ).text(),
-					'</span>',
-					makeInlineButton(
-						mw.message( 'articlecreationhelp-firststep-login' ).text(),
-						'logIn',
-						{ url: logInURL }
-					),
-					'<span class="',
-					CSS_CLASSES.secondLineInCallout,
-					'">',
-					mw.message( 'articlecreationhelp-firststep-post' ).text(),
-					'</span></p>',
-		        ].join('');
+			function makeTemplateLit(str) {
+				return '\'' + str.replace(/'/g,'\\\'') + '\'';
 			}
 
 			// Public (internal) API
