@@ -178,8 +178,7 @@
 		}() );
 
 		/**
-		 * High-level interface for creating HTML for guiders. All public
-		 * methods return HTML strings.
+		 * Factory for HTML for guiders. All public methods return HTML strings.
 		 *
 		 * Note regarding separation of concerns: this object is allowed to work
 		 * directly with messages (via mw.message) but does not know the URLs
@@ -194,139 +193,9 @@
 		 */
 		htmlFactory = ( function () {
 
-			// CSS classes must coordinate with articlecreationhelp.css.
-			var templates = {
-				container:
-					'<div class="ext-art-c-h-inner-container">{content}</div>',
+			// Templates appear below, just before public (internal) API
 
-				firstLine:
-					'<p class="ext-art-c-h-guider-headline">' +
-					'    {pre}<span class="ext-art-c-h-art-title">{title}</span>{post}' +
-					'</p>',
-
-				createOne:
-					'<p>' +
-					'    <span class="ext-art-c-h-suggestion-text">{msg}</span>&nbsp;{button}' +
-					'</p>',
-
-				signUpOrLogIn:
-					'<p>' +
-					'    <span class="ext-art-c-h-suggestion-text">{pre}</span>' +
-					'    {signUpBtn}' +
-					'    <span class="ext-art-c-h-suggestion-text">{or}</span>' +
-					'    {logInBtn}' +
-					'    <span class="ext-art-c-h-suggestion-text">{post}</span>' +
-					'</p>',
-
-				inlineBtnNoCallback:
-					'<a' +
-					'    href="{url}"' +
-					'    class="mw-ui-button mw-ui-primary ext-art-c-h-inline-button">' +
-					'    {name}' +
-					'</a>',
-
-				inlineBtnWCallback:
-					'<a' +
-					'    href="{url}"' +
-					'    class="mw-ui-button mw-ui-primary ext-art-c-h-inline-button"' +
-					'    onclick="{callbackString}">' +
-					'    {name}' +
-					'</a>'
-			};
-
-			// prepare templates for execution
-			for (t in templates) {
-				templates[t] = prepareTemplate(templates[t]);
-			}
-
-			/**
-			 * Generate HTML for the "no article about" paragraphs.
-			 */
-			function makeFirstLine( pre, title, post ) {
-				var vars = {};
-
-				vars.pre = pre;
-				vars.title = title;
-				vars.post = post;
-
-				return executeTemplate( 'firstLine', vars );
-			}
-
-			/**
-			 * HTML of the "would you like to create one?" paragraph
-			 *
-			 * @private
-			 */
-			function makeCreateOne(buttonName, buttonOptions) {
-				var vars = {};
-
-				vars.button = makeInlineButton(
-					buttonName,
-					buttonOptions
-				);
-
-				vars.msg = mw.message( 'articlecreationhelp-redlinks-liketocreateone' ).text();
-
-				return executeTemplate( 'createOne', vars );
-			}
-
-			/**
-			 * HTML for the "please sign up or log in" paragraph
-			 *
-			 * @private
-			 */
-			function makeSignUpOrLogIn(signUpURL, logInURL) {
-
-				var vars = {};
-
-				vars.pre = mw.message( 'articlecreationhelp-firststep-pre' ).text();
-
-				vars.signUpBtn = makeInlineButton(
-					mw.message( 'articlecreationhelp-firststep-signup' ).text(),
-					{ url: signUpURL }
-				);
-
-				vars.or = mw.message( 'articlecreationhelp-firststep-or' ).text();
-
-				vars.logInBtn = makeInlineButton(
-					mw.message( 'articlecreationhelp-firststep-login' ).text(),
-					{ url: logInURL }
-				);
-
-				vars.post = mw.message( 'articlecreationhelp-firststep-post' ).text();
-
-				return executeTemplate( 'signUpOrLogIn', vars );
-			}
-
-			/**
-			 * HTML of an inline button.
-			 *
-			 * @private
-			 *
-			 * @param {String} name the button's text
-			 * @param {Object} options options for button
-			 * @param {String} options.url The URL the button should link to
-			 * @param {String} options.callbackString a string with js code to
-			 *     call on click
-			 *
-			 * @returns {string} HTML for button
-			 */
-			function makeInlineButton( name, options ) {
-				var vars = {};
-				vars.url = options.url || 'javascript:void(0)';
-				vars.name = name;
-
-				if (options.callbackString) {
-					vars.callbackString =
-						'var event = arguments[0] || window.event; event.stopPropagation();' +
-						options.callbackString;
-
-					return executeTemplate( 'inlineBtnWCallback', vars );
-
-				} else {
-					return executeTemplate( 'inlineBtnNoCallback', vars );
-				}
-			}
+			// *********** Template processing
 
 			/**
 			 * Produce output from a template.
@@ -349,7 +218,7 @@
 			}
 
 			/**
-			 * Turn a readable template string into JS code to be run
+			 * Turn a human-readable template string into JS code to be run
 			 * using eval().
 			 *
 			 * @private
@@ -357,7 +226,7 @@
 			 * @param {String} the template string to prepare
 			 */
 			function prepareTemplate(templStr) {
-				var compiledTmpl, lastIdx;
+				var compiledTmpl, lastIdx, varStrTrimmed, varStrMatch;
 
 				// strip out newlines, they're just whitespace in HTML anyway
 				templStr = templStr.replace(/\n/g, ' ');
@@ -377,7 +246,22 @@
 						// vars variable name must coincide with the name
 						// used in executeTemplate()
 						if (varStr) {
-							newStr += 'vars[\'' + $.trim(varStr) + '\'],';
+
+							varStrTrimmed = $.trim(varStr);
+							varStrMatch = varStrTrimmed.match(/^#(.*)/);
+
+							if (varStrMatch){
+
+								// '#' means make an inline button using the
+								// options contained in this variable
+								newStr += 'makeInlineButton(vars[\''
+									+ varStrMatch[1] + '\']),';
+
+							} else {
+
+								// no '#' means insert the variable's string value
+								newStr += 'vars[\'' + varStrTrimmed + '\'],';
+							}
 						}
 
 						lastIdx += lit.length + varStr.length + 2;
@@ -408,7 +292,92 @@
 				return '\'' + str.replace(/'/g,'\\\'') + '\'';
 			}
 
-			// Public (internal) API
+			/**
+			 * HTML of an inline button.
+			 *
+			 * @private
+			 *
+			 * @param {Object} options options for button
+			 * @param {String} options.name the button's text
+			 * @param {String} options.url The URL the button should link to
+			 * @param {String} options.callbackString a string with js code to
+			 *     call on click
+			 *
+			 * @returns {string} HTML for button
+			 */
+			function makeInlineButton( options ) {
+				var vars, url;
+				vars = {
+					name: options.name
+				};
+				url = 'href="' + ( options.url || 'javascript:void(0)' ) + '" ';
+
+				if ( options.callbackString ) {
+					vars.actionAttrs = url
+						+ 'onclick="'
+						+ 'var event = arguments[0] || window.event; event.stopPropagation();'
+						+ options.callbackString
+						+ '"';
+
+				} else {
+					vars.actionAttrs = url;
+				}
+
+				return executeTemplate( 'inlineBtn', vars );
+			}
+
+			// *********** Templates
+
+			// Note: CSS classes must coordinate with ext.articlecreationhelp.css.
+			/**
+			 * Template format:
+			 *    {varName}    Inserts a value passed to executeTemplate via
+			 *                 the vars parameter (in this case, vars.varName).
+			 *    {#btnOpts}   Inserts an inline button using options passed in
+			 *                 via the vars parameter (in this case, vars.btnOpts).
+			 *                 Options available: name, url, callbackString.
+			 *
+			 *    Everything else in the template is rendered as is.
+			 *
+			 */
+			var templates = {
+				container:
+					'<div class="ext-art-c-h-inner-container">{content}</div>',
+
+				firstLine:
+					'<p class="ext-art-c-h-guider-headline">' +
+					'    {pre}<span class="ext-art-c-h-art-title">{title}</span>{post}' +
+					'</p>',
+
+				createOne:
+					'<p>' +
+					'    <span class="ext-art-c-h-suggestion-text">{msg}</span>&nbsp;{#button}' +
+					'</p>',
+
+				signUpOrLogIn:
+					'<p>' +
+					'    <span class="ext-art-c-h-suggestion-text">{pre}</span>' +
+					'    {#signUpBtn}' +
+					'    <span class="ext-art-c-h-suggestion-text">{or}</span>' +
+					'    {#logInBtn}' +
+					'    <span class="ext-art-c-h-suggestion-text">{post}</span>' +
+					'</p>',
+
+				inlineBtn:
+					'<a' +
+					'    {actionAttrs}' + // href and (optionally) onclick attrs go here
+					'    class="mw-ui-button mw-ui-primary ext-art-c-h-inline-button">' +
+					'    {name}' +
+					'</a>'
+			};
+
+			// prepare templates for execution
+			// this happens only once, when the module is loaded
+			for (t in templates) {
+				templates[t] = prepareTemplate(templates[t]);
+			}
+
+			// *********** Public (internal) API
 			return {
 
 				/**
@@ -423,20 +392,30 @@
 				 * @returns {String} HTML string
 				 */
 				makeAnonStep0Desc: function(articleTitle, learnMoreCallbackStr) {
-					var redTextMeans = makeFirstLine(
-						mw.message( 'articlecreationhelp-redlinks-redtextmeanspre' ).text(),
-						articleTitle,
-						mw.message( 'articlecreationhelp-redlinks-redtextmeanspost' ).text() );
+					var firstLine, secondLine;
 
-					var all = [
-						redTextMeans,
-		            	makeCreateOne(
-		                	mw.message( 'articlecreationhelp-redlinks-learnmore' ).text(),
-		                	{ callbackString: learnMoreCallbackStr } )
+					firstLine = executeTemplate( 'firstLine',
+						{
+							pre: mw.message( 'articlecreationhelp-redlinks-redtextmeanspre' ).text(),
+							title: articleTitle,
+							post: mw.message( 'articlecreationhelp-redlinks-redtextmeanspost' ).text()
+						}
+					);
 
-					].join('');
+					secondLine = executeTemplate( 'createOne',
+						{
+							msg: mw.message( 'articlecreationhelp-redlinks-liketocreateone' ).text(),
+							button:
+								{
+									name: mw.message( 'articlecreationhelp-redlinks-learnmore' ).text(),
+									callbackString: learnMoreCallbackStr
+								}
+						}
+					);
 
-					return executeTemplate('container', { content: all } )
+					return executeTemplate('container', {
+						content: firstLine + secondLine
+					} );
 				},
 
 				/**
@@ -448,9 +427,26 @@
 				 * @returns {String} HTML
 				 */
 				makeAnonStep1Desc: function(signUpURL, logInURL) {
-					return executeTemplate( 'container', {
-						content: makeSignUpOrLogIn(signUpURL, logInURL)
-					} );
+
+					var signUpOrLogIn = executeTemplate( 'signUpOrLogIn',
+						{
+							pre: mw.message( 'articlecreationhelp-firststep-pre' ).text(),
+							signUpBtn:
+								{
+									name: mw.message( 'articlecreationhelp-firststep-signup' ).text(),
+									url: signUpURL
+								},
+							or: mw.message( 'articlecreationhelp-firststep-or' ).text(),
+							logInBtn:
+								{
+									name: mw.message( 'articlecreationhelp-firststep-login' ).text(),
+									url: logInURL
+								},
+							post: mw.message( 'articlecreationhelp-firststep-post' ).text()
+						}
+					);
+
+					return executeTemplate( 'container', { content: signUpOrLogIn } );
 				},
 
 				/**
@@ -465,20 +461,31 @@
 				 *
 				 */
 				makeLoggedInStep0Desc: function(articleTitle, createArticleURL) {
-					var noArticle = makeFirstLine(
-						mw.message( 'articlecreationhelp-redlinks-noarticlepre' ).text(),
-						articleTitle,
-						mw.message( 'articlecreationhelp-redlinks-noarticlepost' ).text() );
 
-					var all = [
-						noArticle,
-		                makeCreateOne(
-		                	mw.message( 'articlecreationhelp-redlinks-createarticle' ).text(),
-		                	{ url: createArticleURL } )
+					var firstLine, secondLine;
 
-					].join('');
+					firstLine = executeTemplate( 'firstLine',
+						{
+							pre: mw.message( 'articlecreationhelp-redlinks-noarticlepre' ).text(),
+							title: articleTitle,
+							post: mw.message( 'articlecreationhelp-redlinks-noarticlepost' ).text()
+						}
+					);
 
-					return executeTemplate('container', { content: all } );
+					secondLine = executeTemplate( 'createOne',
+						{
+							msg: mw.message( 'articlecreationhelp-redlinks-liketocreateone' ).text(),
+							button:
+								{
+									name: mw.message( 'articlecreationhelp-redlinks-createarticle' ).text(),
+									url: createArticleURL
+								}
+						}
+					);
+
+					return executeTemplate('container', {
+						content: firstLine + secondLine
+					} );
 				}
 			};
 		}() );
