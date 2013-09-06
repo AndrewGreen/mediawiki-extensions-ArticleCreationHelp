@@ -1,28 +1,48 @@
 @CHARSET "UTF-8";
 
-.guider_content p  {
-	/* undo clear: both from guiders.css */
-	clear: none !important;
-}
-
 .ext-art-c-h-redlinkattach {
 	outline: none;
 }
 
-.ext-art-c-h-title-in-callout {
+/* We override GuidedTour's settings for margins and paddding (on our guiders) */
+/* so we can add a horizontal line across the whole guider. */
+
+.ext-art-c-h-guider {
+	padding: 0 !important;
+}
+
+.ext-art-c-h-guider .guider_close {
+	/* TODO: Will this get reversed automatically for RTL languages? */
+	padding-right: 10px;
+	padding-left: 0;
+	padding-top: 10px;
+}
+
+.ext-art-c-h-guider p.guider_description {
+	clear: none !important;
+	margin: 0;
+}
+
+.ext-art-c-h-guider .ext-art-c-h-inner-container p {
+	clear: none !important;
+	line-height: 1.45em !important;
+	text-align: center;
+	margin: 0.15em 0 0.15em 0 !important;
+}
+
+.ext-art-c-h-inner-container {
+	padding: 12px;
+}
+
+.ext-art-c-h-art-title {
 	color: #550000 !important;
 }
 
-.ext-art-c-h-par-in-callout {
-	line-height: 1.45em !important;
-	text-align: center;
-}
-
-.ext-art-c-h-1st-line-in-callout {
+.ext-art-c-h-guider-headline {
 	font-size: 1.2em !important;
 }
 
-.ext-art-c-h-2nd-line-in-callout {
+.ext-art-c-h-suggestion-text {
 	color: #333 !important;
 	font-style: italic;
 }

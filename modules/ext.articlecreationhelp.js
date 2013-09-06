@@ -29,7 +29,7 @@
 			this.$elem = $elem;
 
 			// CSS class detected by guiders for attachment. Must coordinate
-			// with attachTo in tours.
+			// with ext.articlecreationhelp.css and attachTo in tours
 			this.RED_LINK_ATTACH_CLASS = 'ext-art-c-h-redlinkattach';
 
 			// Extract article title
@@ -193,30 +193,34 @@
 		 * @singleton
 		 */
 		htmlFactory = ( function () {
+
+			// CSS classes must coordinate with articlecreationhelp.css.
 			var templates = {
+				container:
+					'<div class="ext-art-c-h-inner-container">{content}</div>',
+
 				firstLine:
-					'<p class="ext-art-c-h-par-in-callout ext-art-c-h-1st-line-in-callout">' +
-					'    {pre}<span class="ext-art-c-h-title-in-callout">{title}</span>{post}' +
+					'<p class="ext-art-c-h-guider-headline">' +
+					'    {pre}<span class="ext-art-c-h-art-title">{title}</span>{post}' +
 					'</p>',
 
 				createOne:
-					'<p class="ext-art-c-h-par-in-callout">' +
-					'    <span class="ext-art-c-h-2nd-line-in-callout">{msg}</span>&nbsp;{button}' +
+					'<p>' +
+					'    <span class="ext-art-c-h-suggestion-text">{msg}</span>&nbsp;{button}' +
 					'</p>',
 
 				signUpOrLogIn:
-					'<p class="ext-art-c-h-par-in-callout">' +
-					'    <span class="ext-art-c-h-2nd-line-in-callout">{pre}</span>' +
+					'<p>' +
+					'    <span class="ext-art-c-h-suggestion-text">{pre}</span>' +
 					'    {signUpBtn}' +
-					'    <span class="ext-art-c-h-2nd-line-in-callout">{or}</span>' +
+					'    <span class="ext-art-c-h-suggestion-text">{or}</span>' +
 					'    {logInBtn}' +
-					'    <span class="ext-art-c-h-2nd-line-in-callout">{post}</span>' +
+					'    <span class="ext-art-c-h-suggestion-text">{post}</span>' +
 					'</p>',
 
 				inlineBtnNoCallback:
 					'<a' +
 					'    href="{url}"' +
-					'    id="{id}"' +
 					'    class="mw-ui-button mw-ui-primary ext-art-c-h-inline-button">' +
 					'    {name}' +
 					'</a>',
@@ -224,7 +228,6 @@
 				inlineBtnWCallback:
 					'<a' +
 					'    href="{url}"' +
-					'    id="{id}"' +
 					'    class="mw-ui-button mw-ui-primary ext-art-c-h-inline-button"' +
 					'    onclick="{callbackString}">' +
 					'    {name}' +
@@ -259,7 +262,6 @@
 
 				vars.button = makeInlineButton(
 					buttonName,
-					'createOne',
 					buttonOptions
 				);
 
@@ -281,7 +283,6 @@
 
 				vars.signUpBtn = makeInlineButton(
 					mw.message( 'articlecreationhelp-firststep-signup' ).text(),
-					'signUp',
 					{ url: signUpURL }
 				);
 
@@ -289,7 +290,6 @@
 
 				vars.logInBtn = makeInlineButton(
 					mw.message( 'articlecreationhelp-firststep-login' ).text(),
-					'logIn',
 					{ url: logInURL }
 				);
 
@@ -311,11 +311,10 @@
 			 *
 			 * @returns {string} HTML for button
 			 */
-			function makeInlineButton( name, id, options ) {
+			function makeInlineButton( name, options ) {
 				var vars = {};
 				vars.url = options.url || 'javascript:void(0)';
 				vars.name = name;
-				vars.id = id;
 
 				if (options.callbackString) {
 					vars.callbackString =
@@ -338,8 +337,15 @@
 			 * @param {Object} vars object whose properties are variables to be
 			 *     used in the template
 			 */
+			// vars variable name must coincide with the name used in
+			// prepareTemplate()
 			function executeTemplate(id, vars) {
-				return eval(templates[id]);
+				var template = templates[id];
+
+				if (!template) {
+					throw 'Cannot find template ' + id;
+				}
+				return eval(template);
 			}
 
 			/**
@@ -353,9 +359,10 @@
 			function prepareTemplate(templStr) {
 				var compiledTmpl, lastIdx;
 
-				// strip out newlines, not useful in HTML anyway
-				templStr = templStr.replace(/\n/g, '');
+				// strip out newlines, they're just whitespace in HTML anyway
+				templStr = templStr.replace(/\n/g, ' ');
 
+				// replace pairs of literal and var sections (e.g., 'lit{var}')
 				lastIdx = 0;
 				compiledTmpl = templStr.replace
 					(/([^{}]*){([^{}]*)}/g,
@@ -367,6 +374,8 @@
 							newStr = '';
 						}
 
+						// vars variable name must coincide with the name
+						// used in executeTemplate()
 						if (varStr) {
 							newStr += 'vars[\'' + $.trim(varStr) + '\'],';
 						}
@@ -375,6 +384,7 @@
 						return newStr;
 				} );
 
+				// replace the final literal section if there is one
 				if (lastIdx < templStr.length) {
 					var lastLit = templStr.slice(lastIdx, templStr.length);
 					compiledTmpl = compiledTmpl.slice(
@@ -413,18 +423,20 @@
 				 * @returns {String} HTML string
 				 */
 				makeAnonStep0Desc: function(articleTitle, learnMoreCallbackStr) {
-					redTextMeans = makeFirstLine(
+					var redTextMeans = makeFirstLine(
 						mw.message( 'articlecreationhelp-redlinks-redtextmeanspre' ).text(),
 						articleTitle,
 						mw.message( 'articlecreationhelp-redlinks-redtextmeanspost' ).text() );
 
-					return [
+					var all = [
 						redTextMeans,
 		            	makeCreateOne(
 		                	mw.message( 'articlecreationhelp-redlinks-learnmore' ).text(),
 		                	{ callbackString: learnMoreCallbackStr } )
 
 					].join('');
+
+					return executeTemplate('container', { content: all } )
 				},
 
 				/**
@@ -436,7 +448,9 @@
 				 * @returns {String} HTML
 				 */
 				makeAnonStep1Desc: function(signUpURL, logInURL) {
-					return makeSignUpOrLogIn(signUpURL, logInURL);
+					return executeTemplate( 'container', {
+						content: makeSignUpOrLogIn(signUpURL, logInURL)
+					} );
 				},
 
 				/**
@@ -451,18 +465,20 @@
 				 *
 				 */
 				makeLoggedInStep0Desc: function(articleTitle, createArticleURL) {
-					noArticle = makeFirstLine(
+					var noArticle = makeFirstLine(
 						mw.message( 'articlecreationhelp-redlinks-noarticlepre' ).text(),
 						articleTitle,
 						mw.message( 'articlecreationhelp-redlinks-noarticlepost' ).text() );
 
-					return [
+					var all = [
 						noArticle,
 		                makeCreateOne(
 		                	mw.message( 'articlecreationhelp-redlinks-createarticle' ).text(),
 		                	{ url: createArticleURL } )
 
 					].join('');
+
+					return executeTemplate('container', { content: all } );
 				}
 			};
 		}() );
