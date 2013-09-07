@@ -106,7 +106,7 @@
 			// Get all red links on the page
 			// TODO Find a sounder way to find red links (like adding a special
 			// class to them on the server via a parser hook?)
-			$redLinks = $('a.new');
+			$redLinks = $( 'a.new' );
 
 			function getAnchorFromEvent( event ) {
 				return $( event.target ).closest( 'a' );
@@ -168,10 +168,10 @@
 				 * @param {Function} showCallback function to show a guider over
 				 *     a red link
 				 */
-				bind: function(showCallback) {
+				bind: function( showCallback ) {
 					self.showCallback = showCallback;
-					$redLinks.click(click);
-					$redLinks.hover(mousein, mouseout);
+					$redLinks.click( click );
+					$redLinks.hover( mousein, mouseout );
 				},
 				currentGuiderElem: null
 			};
@@ -208,13 +208,13 @@
 			 */
 			// vars variable name must coincide with the name used in
 			// prepareTemplate()
-			function executeTemplate(id, vars) {
-				var template = templates[id];
+			function executeTemplate( id, vars ) {
+				var template = templates[ id ];
 
-				if (!template) {
+				if ( !template ) {
 					throw 'Cannot find template ' + id;
 				}
-				return eval(template);
+				return eval( template );
 			}
 
 			/**
@@ -225,34 +225,34 @@
 			 *
 			 * @param {String} the template string to prepare
 			 */
-			function prepareTemplate(templStr) {
+			function prepareTemplate( templStr ) {
 				var compiledTmpl, lastIdx, varStrTrimmed, varStrMatch;
 
 				// turn newlines into spaces
 				// if a space appears  before or after an html tag, it'll
 				// be stripped out further on
-				templStr = templStr.replace(/\n/g, ' ');
+				templStr = templStr.replace( /\n/g, ' ' );
 
 				// replace pairs of literal and var sections (e.g., 'lit{var}')
 				lastIdx = 0;
 				compiledTmpl = templStr.replace
-					(/([^{}]*){([^{}]*)}/g,
-					function(m, lit, varStr, offset){
+					( /([^{}]*){([^{}]*)}/g,
+					function( m, lit, varStr, offset ){
 						var newStr;
-						if (lit) {
-							newStr = makeTemplateLit(lit) + ',';
+						if ( lit ) {
+							newStr = makeTemplateLit( lit ) + ',';
 						} else {
 							newStr = '';
 						}
 
 						// vars variable name must coincide with the name
 						// used in executeTemplate()
-						if (varStr) {
+						if ( varStr ) {
 
-							varStrTrimmed = $.trim(varStr);
-							varStrMatch = varStrTrimmed.match(/^#(.*)/);
+							varStrTrimmed = $.trim( varStr );
+							varStrMatch = varStrTrimmed.match( /^#(.*)/ );
 
-							if (varStrMatch){
+							if ( varStrMatch ){
 
 								// '#' means make an inline button using the
 								// options contained in this variable
@@ -271,15 +271,15 @@
 				} );
 
 				// replace the final literal section if there is one
-				if (lastIdx < templStr.length) {
-					var lastLit = templStr.slice(lastIdx, templStr.length);
+				if ( lastIdx < templStr.length ) {
+					var lastLit = templStr.slice( lastIdx, templStr.length );
 					compiledTmpl = compiledTmpl.slice(
-						0, compiledTmpl.length - lastLit.length)
-						+ makeTemplateLit(lastLit);
+						0, compiledTmpl.length - lastLit.length )
+						+ makeTemplateLit( lastLit );
 				}
 
 				// remove trailing comma and wrap as an array join
-				compiledTmpl = compiledTmpl.replace(/\,$/,'');
+				compiledTmpl = compiledTmpl.replace( /\,$/, '' );
 				compiledTmpl = '[' + compiledTmpl + '].join(\'\')';
 
 				return compiledTmpl;
@@ -292,11 +292,11 @@
 			 */
 			function makeTemplateLit(str) {
 				// strip out whitespace before and after tags
-				var retStr = str.replace(/>\s*/, '>');
-				retStr = retStr.replace(/\s*</, '<');
+				var retStr = str.replace( />\s*/, '>' );
+				retStr = retStr.replace( /\s*</, '<' );
 
 				// surround by quotes, escape quotes within
-				return '\'' + retStr.replace(/'/g,'\\\'') + '\'';
+				return '\'' + retStr.replace( /'/g, '\\\'' ) + '\'';
 			}
 
 			/**
@@ -394,8 +394,8 @@
 
 			// prepare templates for execution
 			// this happens only once, when the module is loaded
-			for (t in templates) {
-				templates[t] = prepareTemplate(templates[t]);
+			for ( t in templates ) {
+				templates[ t ] = prepareTemplate( templates[ t ] );
 			}
 
 			// *********** Public (internal) API
@@ -412,7 +412,7 @@
 				 *    for "Learn More" button.
 				 * @returns {String} HTML string
 				 */
-				makeAnonStep0Desc: function(articleTitle, learnMoreCallbackStr) {
+				makeAnonStep0Desc: function( articleTitle, learnMoreCallbackStr ) {
 					var firstLine, secondLine;
 
 					firstLine = executeTemplate( 'firstLine',
@@ -448,7 +448,7 @@
 				 * @param {String} readMoreURL URL for the link to more information
 				 * @returns {String} HTML
 				 */
-				makeAnonStep1Desc: function(signUpURL, logInURL, readMoreURL) {
+				makeAnonStep1Desc: function( signUpURL, logInURL, readMoreURL ) {
 					var signUpOrLogIn, readMore;
 
 					signUpOrLogIn = executeTemplate( 'signUpOrLogIn',
@@ -470,7 +470,7 @@
 					);
 
 
-					readMore = executeTemplate('readMore',
+					readMore = executeTemplate( 'readMore',
 						{
 							pre: mw.message( 'articlecreationhelp-redlinks-readmore-pre' ).text(),
 							url: readMoreURL,
@@ -479,7 +479,7 @@
 						}
 					);
 
-					return executeTemplate('dividedContainer', {
+					return executeTemplate( 'dividedContainer', {
 						topContent: signUpOrLogIn,
 						bottomContent: readMore
 					} );
@@ -496,7 +496,7 @@
 				 * @returns {String} HTML string
 				 *
 				 */
-				makeLoggedInStep0Desc: function(articleTitle, createArticleURL) {
+				makeLoggedInStep0Desc: function( articleTitle, createArticleURL ) {
 
 					var firstLine, secondLine;
 
@@ -519,7 +519,7 @@
 						}
 					);
 
-					return executeTemplate('container', {
+					return executeTemplate( 'container', {
 						content: firstLine + secondLine
 					} );
 				}
