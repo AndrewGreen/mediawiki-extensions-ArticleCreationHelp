@@ -14,20 +14,21 @@ $messages['en'] = array(
 	'articlecreationhelp-desc' => 'Helps users learn to create new articles effectively; provides popups over red links and an article creation landing page.',
 	
 	// Red links	
-	'articlecreationhelp-redlinks-redtextmeanspre' => 'The article ‘',
-	'articlecreationhelp-redlinks-redtextmeanspost' => '’ doesn’t exist.',
+	'articlecreationhelp-redlinks-redtextmeans-pre' => 'The article ‘',
+	'articlecreationhelp-redlinks-redtextmeans-post' => '’ doesn’t exist.',
 	'articlecreationhelp-redlinks-liketocreateone' => 'Would you like to create it?',
 	'articlecreationhelp-redlinks-learnmore' => 'Learn more',
 	'articlecreationhelp-redlinks-createarticle' => 'Create article',
-	'articlecreationhelp-redlinks-noarticlepre' => 'The article ‘',
-	'articlecreationhelp-redlinks-noarticlepost' => '’ doesn’t exist.',
-		
-	// Please sign up or log in (used various places)
-	'articlecreationhelp-firststep-pre' => 'To create an article, first you should<br />',
-	'articlecreationhelp-firststep-signup' => 'Create an account',
-	'articlecreationhelp-firststep-or' => ' or ',
-	'articlecreationhelp-firststep-login' => 'Log in',
-	'articlecreationhelp-firststep-post' => '.',
+	'articlecreationhelp-redlinks-noarticle-pre' => 'The article ‘',
+	'articlecreationhelp-redlinks-noarticle-post' => '’ doesn’t exist.',
+	'articlecreationhelp-redlinks-firststep-pre' => 'To create an article, first you should<br />',
+	'articlecreationhelp-redlinks-firststep-signup' => 'Create an account',
+	'articlecreationhelp-redlinks-firststep-or' => ' or ',
+	'articlecreationhelp-redlinks-firststep-login' => 'Log in',
+	'articlecreationhelp-redlinks-firststep-post' => '.',
+	'articlecreationhelp-redlinks-readmore-pre' => 'Not sure? Check out these ',
+	'articlecreationhelp-redlinks-readmore-link' => 'tips for new editors',
+	'articlecreationhelp-redlinks-readmore-post' => '!',
 		
 	// Special page
 	'articlecreationhelp-specialpage-titlepre' => 'Create the Article ‘',

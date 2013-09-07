@@ -8,7 +8,7 @@
 			classString: 'ext-art-c-h-guider',
 			position: 'top',
 			offset: {gap: 23},
-			width: 340,
+			width: 360,
 			attachTo: '.ext-art-c-h-redlinkattach',
 			onClose: mw.articlecreationhelp.internal.closeTourHandler,
 			allowAutomaticOkay: false,

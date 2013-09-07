@@ -14,7 +14,8 @@
 			allowAutomaticOkay: false,
 		}, {
 			title: null,
-			classString: 'ext-art-c-h-guider',
+			classString: 'ext-art-c-h-guider ext-art-c-h-divided-top-guider',
+			vFlippedClassString: 'ext-art-c-h-guider',
 			position: 'top',
 			offset: {gap: 23},
 			width: 360,

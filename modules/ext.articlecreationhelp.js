@@ -228,7 +228,9 @@
 			function prepareTemplate(templStr) {
 				var compiledTmpl, lastIdx, varStrTrimmed, varStrMatch;
 
-				// strip out newlines, they're just whitespace in HTML anyway
+				// turn newlines into spaces
+				// if a space appears  before or after an html tag, it'll
+				// be stripped out further on
 				templStr = templStr.replace(/\n/g, ' ');
 
 				// replace pairs of literal and var sections (e.g., 'lit{var}')
@@ -289,7 +291,12 @@
 			 * @private
 			 */
 			function makeTemplateLit(str) {
-				return '\'' + str.replace(/'/g,'\\\'') + '\'';
+				// strip out whitespace before and after tags
+				var retStr = str.replace(/>\s*/, '>');
+				retStr = retStr.replace(/\s*</, '<');
+
+				// surround by quotes, escape quotes within
+				return '\'' + retStr.replace(/'/g,'\\\'') + '\'';
 			}
 
 			/**
@@ -337,12 +344,17 @@
 			 *                 via the vars parameter (in this case, vars.btnOpts).
 			 *                 Options available: name, url, callbackString.
 			 *
-			 *    Everything else in the template is rendered as is.
+			 *    Everything else in the template is rendered as is--except that
+			 *    whitespace between tags is stripped out.
 			 *
 			 */
 			var templates = {
 				container:
 					'<div class="ext-art-c-h-inner-container">{content}</div>',
+
+				dividedContainer:
+					'<div class="ext-art-c-h-top-inner-container">{topContent}</div>' +
+					'<div class="ext-art-c-h-bottom-inner-container">{bottomContent}</div>',
 
 				firstLine:
 					'<p class="ext-art-c-h-guider-headline">' +
@@ -361,6 +373,15 @@
 					'    <span class="ext-art-c-h-suggestion-text">{or}</span>' +
 					'    {#logInBtn}' +
 					'    <span class="ext-art-c-h-suggestion-text">{post}</span>' +
+					'</p>',
+
+				readMore:
+					'<p>' +
+					'    <span class="ext-art-c-h-readmore">' +
+					'    {pre}' +
+					'    <a href="{url}">{linkText}</a>' +
+					'    {post}' +
+					'    </span>' +
 					'</p>',
 
 				inlineBtn:
@@ -396,9 +417,9 @@
 
 					firstLine = executeTemplate( 'firstLine',
 						{
-							pre: mw.message( 'articlecreationhelp-redlinks-redtextmeanspre' ).text(),
+							pre: mw.message( 'articlecreationhelp-redlinks-redtextmeans-pre' ).text(),
 							title: articleTitle,
-							post: mw.message( 'articlecreationhelp-redlinks-redtextmeanspost' ).text()
+							post: mw.message( 'articlecreationhelp-redlinks-redtextmeans-post' ).text()
 						}
 					);
 
@@ -424,29 +445,44 @@
 				 *
 				 * @param {String} signUpURL URL for the "Create an account" button
 				 * @param {String} logInURL URL for the "Log in" button
+				 * @param {String} readMoreURL URL for the link to more information
 				 * @returns {String} HTML
 				 */
-				makeAnonStep1Desc: function(signUpURL, logInURL) {
+				makeAnonStep1Desc: function(signUpURL, logInURL, readMoreURL) {
+					var signUpOrLogIn, readMore;
 
-					var signUpOrLogIn = executeTemplate( 'signUpOrLogIn',
+					signUpOrLogIn = executeTemplate( 'signUpOrLogIn',
 						{
-							pre: mw.message( 'articlecreationhelp-firststep-pre' ).text(),
+							pre: mw.message( 'articlecreationhelp-redlinks-firststep-pre' ).text(),
 							signUpBtn:
 								{
-									name: mw.message( 'articlecreationhelp-firststep-signup' ).text(),
+									name: mw.message( 'articlecreationhelp-redlinks-firststep-signup' ).text(),
 									url: signUpURL
 								},
-							or: mw.message( 'articlecreationhelp-firststep-or' ).text(),
+							or: mw.message( 'articlecreationhelp-redlinks-firststep-or' ).text(),
 							logInBtn:
 								{
-									name: mw.message( 'articlecreationhelp-firststep-login' ).text(),
+									name: mw.message( 'articlecreationhelp-redlinks-firststep-login' ).text(),
 									url: logInURL
 								},
-							post: mw.message( 'articlecreationhelp-firststep-post' ).text()
+							post: mw.message( 'articlecreationhelp-redlinks-firststep-post' ).text()
 						}
 					);
 
-					return executeTemplate( 'container', { content: signUpOrLogIn } );
+
+					readMore = executeTemplate('readMore',
+						{
+							pre: mw.message( 'articlecreationhelp-redlinks-readmore-pre' ).text(),
+							url: readMoreURL,
+							linkText: mw.message( 'articlecreationhelp-redlinks-readmore-link' ).text(),
+							post: mw.message( 'articlecreationhelp-redlinks-readmore-post' ).text()
+						}
+					);
+
+					return executeTemplate('dividedContainer', {
+						topContent: signUpOrLogIn,
+						bottomContent: readMore
+					} );
 				},
 
 				/**
@@ -466,9 +502,9 @@
 
 					firstLine = executeTemplate( 'firstLine',
 						{
-							pre: mw.message( 'articlecreationhelp-redlinks-noarticlepre' ).text(),
+							pre: mw.message( 'articlecreationhelp-redlinks-noarticle-pre' ).text(),
 							title: articleTitle,
-							post: mw.message( 'articlecreationhelp-redlinks-noarticlepost' ).text()
+							post: mw.message( 'articlecreationhelp-redlinks-noarticle-post' ).text()
 						}
 					);
 
@@ -501,7 +537,7 @@
 		mw.articlecreationhelp = {};
 		mw.articlecreationhelp.internal = ( function () {
 
-			var showTour, TOURS, signUpURL, logInURL;
+			var showTour, TOURS, signUpURL, logInURL, readMoreURL;
 
 			// Tour names: coordinate with ArticleCreationHelp.php and
 			// .js files for tours.
@@ -510,12 +546,13 @@
 				'loggedInTourName':	'articlecreationhelpredlinksloggedin',
 			};
 
-			// set up sign up and sign in URLs, which don't change depending
+			// set up URLs that don't change depending
 			// on the red link we're over
 			signUpURL = new mw.Uri( mw.util.wikiGetlink( 'Special:UserLogin' ) )
 				.extend( { type: 'signup' } );
 
 			logInURL = mw.util.wikiGetlink( 'Special:UserLogin' );
+			readMoreURL = 'https://en.wikipedia.org/wiki/Wikipedia:Notability';
 
 			function closeTourHandler () {
 				state.tourActive = false;
@@ -581,7 +618,7 @@
 
 					tourController.modifyStep( 1, {
 						description: htmlFactory.makeAnonStep1Desc(
-						signUpURL, logInURL),
+						signUpURL, logInURL, readMoreURL),
 
 					} );
 

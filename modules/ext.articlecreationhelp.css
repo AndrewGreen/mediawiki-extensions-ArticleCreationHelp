@@ -23,7 +23,9 @@
 	margin: 0;
 }
 
-.ext-art-c-h-guider .ext-art-c-h-inner-container p {
+.ext-art-c-h-guider .ext-art-c-h-inner-container p,
+.ext-art-c-h-guider .ext-art-c-h-top-inner-container p,
+.ext-art-c-h-guider .ext-art-c-h-bottom-inner-container p {
 	clear: none !important;
 	line-height: 1.45em !important;
 	text-align: center;
@@ -32,6 +34,20 @@
 
 .ext-art-c-h-inner-container {
 	padding: 12px;
+}
+
+.ext-art-c-h-top-inner-container {
+	padding: 12px 12px 7px 12px;
+}
+
+.ext-art-c-h-bottom-inner-container {
+	padding: 7px 12px 12px 12px;
+	border-top: 1px solid #bbb;
+	background-color: #f1f1f1;
+}
+
+.ext-art-c-h-divided-top-guider .guider_arrow {
+	background-image: url("ext.artCH.darkerArrows.png") !important;
 }
 
 .ext-art-c-h-art-title {
@@ -45,6 +61,17 @@
 .ext-art-c-h-suggestion-text {
 	color: #333 !important;
 	font-style: italic;
+}
+
+.ext-art-c-h-readmore {
+	color: #666;
+}
+
+.ext-art-c-h-readmore a {
+	/* This blue is a bit less saturated than the blue for normal links, */
+	/* so it doesn't jump out of the grey background too much. */
+	/* TODO: coordinate with skins? */
+	color: #061c60;
 }
 
 .ext-art-c-h-inline-button {

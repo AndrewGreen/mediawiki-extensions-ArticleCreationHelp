@@ -1,6 +1,8 @@
 <?php
 class SpecialArticleCreationHelp extends SpecialPage {
 	
+	// TODO Include here an option for reading about article creation?
+	
 	public function __construct() {
 		parent::__construct( 'ArticleCreationHelp' );
 	}
