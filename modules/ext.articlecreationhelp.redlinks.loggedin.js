@@ -11,6 +11,11 @@
 			width: 360,
 			attachTo: '.ext-art-c-h-redlinkattach',
 			onClose: mw.articlecreationhelp.internal.closeTourHandler,
+
+			// callbacks to avoid auto-hiding guider if the mouse is over it
+			onMouseEnter: mw.articlecreationhelp.internal.guiderMouseEnter,
+			onMouseLeave: mw.articlecreationhelp.internal.guiderMouseLeave,
+
 			allowAutomaticOkay: false,
 		} ],
 		isSinglePage: true

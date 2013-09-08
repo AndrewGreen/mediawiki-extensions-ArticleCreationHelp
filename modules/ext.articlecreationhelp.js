@@ -86,7 +86,7 @@
 			return {
 				loggedIn: loggedIn,
 				onSpecialPage: onSpecialPage,
-				tourActive: false,
+				activeTour: null,
 				focusedRedLink: null
 			};
 		}() );
@@ -94,14 +94,41 @@
 		/**
 		 * Sets up and manages low-level events on red links.
 		 *
+		 * If the user clicks on a red link, we show a guider.
+		 *
+		 * If the user hovers over a red link for a short time, we show a guider.
+		 *
+		 * If the guider appears due to hovering, and the mouse moves off the
+		 * link and the guider, the guider automatically disappears after a
+		 * few seconds.
+		 *
+		 * However, if the user clicks on the red link or on a guider button,
+		 * the guider does not disappear automatically, and only disappears
+		 * if the user closes it manually (by hitting escape, or clicking outside
+		 * the guider or on the close button).
+		 *
+		 * The idea is that hovering is passive, so we shouldn't require the user
+		 * to actively intervene to hide an element that appears due to hovering.
+		 * However, by clicking somewhere (red link or guider), the user
+		 * demonstrates that he or she is interested in these elements, so after
+		 * that the guider shouldn't disappear without active intervention.
+		 *
 		 * @singleton
 		 */
 		uiInteractionMgr = ( function () {
-			var hoverTimer, lastOriginalTitleAttr, $redLinks, HOVER_TIMEOUT_MS,
-				self;
+			var HOVER_TIMEOUT_MS, HIDE_AFTER_HOVER_TIMEOUT_MS, self,
+				hoverTimer, onlyHoverInteractionsReceived, hideAfterHoverTimer,
+				lastOriginalTitleAttr, $redLinks;
+
+			HOVER_TIMEOUT_MS = 700;
+			HIDE_AFTER_HOVER_TIMEOUT_MS = 3000;
 
 			self = this;
-			HOVER_TIMEOUT_MS = 700;
+
+			hoverTimer = null;
+			onlyHoverInteractionsReceived = null;
+			hideAfterHoverTimer = null;
+			lastOriginalTitleAttr = null;
 
 			// Get all red links on the page
 			// TODO Find a sounder way to find red links (like adding a special
@@ -116,27 +143,25 @@
 			function click( event ) {
 				clearHoverTimer();
 				self.showCallback( getAnchorFromEvent( event ) );
+
+				// we've gotten a click, so cancel auto-hiding the guider
+				clearHideAfterHoverTimer();
+				onlyHoverInteractionsReceived = false;
+
+				// prevent navegation to link
 				return false;
 			}
 
 			// Hover (a lot more involved)
-			hoverTimer = null;
-			lastOriginalTitleAttr = null;
-
-			function clearHoverTimer() {
-				if ( hoverTimer != null ) {
-					clearTimeout( hoverTimer );
-					hoverTimer = null;
-				}
-			}
-
-			// TODO If a tour is activated on hover, then moving the mouse off the
-			// link and away from the callout should start a timer for
-			// ending the tour.
 			function mousein( event ) {
 				var $a;
 
 				$a =  getAnchorFromEvent(event);
+
+				clearHideAfterHoverTimer();
+				if (onlyHoverInteractionsReceived === null) {
+					onlyHoverInteractionsReceived = true;
+				}
 
 				if ( hoverTimer === null ) {
 					hoverTimer = setTimeout(function() {
@@ -154,8 +179,38 @@
 			function mouseout ( event ) {
 				clearHoverTimer();
 
+				// If we have only hover interactions so far, set a timer
+				// to hide the guider after a short delay.
+				// NOTE: this can happen even if the guider isn't showing, but
+				// that's OK.
+				if (onlyHoverInteractionsReceived !== false) {
+					setHideAfterHoverTimer();
+				}
+
 				// Re-attach original title attribute
 				getAnchorFromEvent( event ).attr( 'title', lastOriginalTitleAttr );
+			}
+
+			function clearHoverTimer() {
+				if ( hoverTimer !== null ) {
+					clearTimeout( hoverTimer );
+					hoverTimer = null;
+				}
+			}
+
+			function setHideAfterHoverTimer() {
+				hideAfterHoverTimer = setTimeout( function() {
+					self.hideCallback();
+					onlyHoverInteractionsReceived = null;
+
+				}, HIDE_AFTER_HOVER_TIMEOUT_MS );
+			}
+
+			function clearHideAfterHoverTimer() {
+				if ( hideAfterHoverTimer !== null ) {
+					clearTimeout( hideAfterHoverTimer );
+					hideAfterHoverTimer = null;
+				}
 			}
 
 			// Public (internal) API
@@ -167,13 +222,47 @@
 				 *
 				 * @param {Function} showCallback function to show a guider over
 				 *     a red link
+				 * @param {Function} hideCallback function to hide the current
+				 *     guider over a red link
 				 */
-				bind: function( showCallback ) {
+				bind: function( showCallback, hideCallback ) {
 					self.showCallback = showCallback;
+					self.hideCallback = hideCallback;
 					$redLinks.click( click );
 					$redLinks.hover( mousein, mouseout );
 				},
-				currentGuiderElem: null
+
+				/**
+				 * Notify that the mouse is over the guider.
+				 */
+				guiderEnter: function () {
+					clearHideAfterHoverTimer();
+				},
+
+				/**
+				 * Notify that the mouse has left the guider.
+				 */
+				guiderLeave: function () {
+					if (onlyHoverInteractionsReceived !== false) {
+						setHideAfterHoverTimer();
+					}
+				},
+
+				/**
+				 * Notify that the user clicked something on the guider.
+				 */
+				confirmNonHoverInteraction: function() {
+					clearHideAfterHoverTimer();
+					onlyHoverInteractionsReceived = false;
+				},
+
+				/**
+				 * Reset state information about hover events (in preparation for
+				 * showing a tour again).
+				 */
+				resetNonHoverInteractionState: function() {
+					onlyHoverInteractionsReceived = null;
+				}
 			};
 		}() );
 
@@ -307,8 +396,9 @@
 			 * @param {Object} options options for button
 			 * @param {String} options.name the button's text
 			 * @param {String} options.url The URL the button should link to
+			 *    (optional)
 			 * @param {String} options.callbackString a string with js code to
-			 *     call on click
+			 *     call on click (optional)
 			 *
 			 * @returns {string} HTML for button
 			 */
@@ -537,7 +627,7 @@
 		mw.articlecreationhelp = {};
 		mw.articlecreationhelp.internal = ( function () {
 
-			var showTour, TOURS, signUpURL, logInURL, readMoreURL;
+			var TOURS, signUpURL, logInURL, readMoreURL, showTour, hideTour;
 
 			// Tour names: coordinate with ArticleCreationHelp.php and
 			// .js files for tours.
@@ -555,18 +645,30 @@
 			readMoreURL = 'https://en.wikipedia.org/wiki/Wikipedia:Notability';
 
 			function closeTourHandler () {
-				state.tourActive = false;
+				state.activeTour = null;
+				uiInteractionMgr.resetNonHoverInteractionState();
 			};
+
+			function guiderMouseEnter() {
+				uiInteractionMgr.guiderEnter();
+			}
+
+			function guiderMouseLeave() {
+				uiInteractionMgr.guiderLeave();
+			}
+
+			function learnMoreClick() {
+				uiInteractionMgr.confirmNonHoverInteraction();
+				mw.libs.guiders.next();
+			}
 
 			showTour = function ( $a ) {
 				var tourController, articleTitle, createArticleURL;
 
 				// Don't launch a tour if one's already going for the same link
-				if ( ( state.tourActive ) && ( state.focusedRedLink.same( $a ) ) ) {
+				if ( ( state.activeTour ) && ( state.focusedRedLink.same( $a ) ) ) {
 					return;
 				}
-
-				state.tourActive = true;
 
 				// TODO check if we're editing a page, and don't show callouts on
 				// red links to the same page. (That can happen when editing a user
@@ -584,9 +686,11 @@
 
 				if ( state.loggedIn ) {
 
+					state.activeTour = TOURS.loggedInTourName;
+
 					// Red links tour for logged in users
 
-					tourController = mw.guidedTour.getTourController( TOURS.loggedInTourName );
+					tourController = mw.guidedTour.getTourController( state.activeTour );
 					tourController.reset();
 
 					createArticleURL = new mw.Uri( mw.util.wikiGetlink( 'Special:ArticleCreationHelp' ) )
@@ -607,13 +711,15 @@
 
 					// Red links tour for anonymous users
 
-					tourController = mw.guidedTour.getTourController( TOURS.anonTourName );
+					state.activeTour = TOURS.anonTourName;
+
+					tourController = mw.guidedTour.getTourController( state.activeTour );
 					tourController.reset();
 
 					tourController.modifyStep( 0, {
 						description: htmlFactory.makeAnonStep0Desc(
 							articleTitle,
-							'mw.libs.guiders.next();' )
+							'mw.articlecreationhelp.internal.learnMoreClick();' )
 					} );
 
 					tourController.modifyStep( 1, {
@@ -626,11 +732,20 @@
 				}
 			};
 
-			uiInteractionMgr.bind( showTour );
+			hideTour = function () {
+				if ( state.activeTour ) {
+					mw.guidedTour.getTourController( state.activeTour ).cancel();
+				}
+			};
+
+			uiInteractionMgr.bind( showTour, hideTour );
 
 			// API (intended for internal use) at mw.articlecreationhelp.internal
 			return {
 				closeTourHandler: closeTourHandler,
+				guiderMouseEnter: guiderMouseEnter,
+				guiderMouseLeave: guiderMouseLeave,
+				learnMoreClick: learnMoreClick
 			};
 		}() );
 
