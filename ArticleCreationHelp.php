@@ -45,8 +45,6 @@ $wgAutoloadClasses += array(
 	'SpecialArticleCreationHelp' => __DIR__ . '/SpecialArticleCreationHelp.php',
 );
 
-// TODO event logging for A/B testing
-
 // Schema for event logging
 $articleCreationHelpSchemaModuleName = 'schema.' . ArticleCreationHelpHooks::SCHEMA_NAME;
 
@@ -69,6 +67,7 @@ $wgResourceModules[ 'ext.articlecreationhelp' ] = array(
 	'dependencies' => array(
 		'ext.guidedTour',
 		'mediawiki.Uri',
+		$articleCreationHelpSchemaModuleName,
 	),
 	'messages' => array(
 		'articlecreationhelp-redlinks-redtextmeans-pre',

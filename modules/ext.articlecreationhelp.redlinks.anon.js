@@ -2,7 +2,7 @@
 ( function ( window, document, $, mw, gt ) {
 	gt.defineTour( {
 		name: 'articlecreationhelpredlinksanon',
-		shouldLog: true,
+		shouldLog: false,
 		steps: [ {
 			title: null,
 			classString: 'ext-art-c-h-guider',

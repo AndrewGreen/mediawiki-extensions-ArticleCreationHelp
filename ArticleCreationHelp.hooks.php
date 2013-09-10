@@ -9,11 +9,9 @@
 
 class ArticleCreationHelpHooks {
 
-	
-	const SCHEMA_NAME = 'ArticleCreationHelpRedLinks';
-	
-	// TODO: Where should this come from??? I just made it up.
-	const SCHEMA_REV_ID = 2314223;
+	// See https://meta.wikimedia.org/wiki/Schema:ArticleCreationHelp
+	const SCHEMA_NAME = 'ArticleCreationHelp';
+	const SCHEMA_REV_ID = 5797614;
 	
 	/**
 	 * MakeGlobalVariablesScript hook.
@@ -24,19 +22,12 @@ class ArticleCreationHelpHooks {
 	 * @return bool
 	 */
 	public static function onMakeGlobalVariablesScript( &$vars, OutputPage $out ) {
-	
-		global $wgTitle;
 
-		$loggedIn = !( $out->getUser()->isAnon() );
-		$onSpecialPage = ($wgTitle == 'Special:ArticleCreationHelp'); 		
-		
-		$vars[ 'wgArticleCreationHelpRedLinks' ] = array(
-			'loggedIn' => $loggedIn,
-			'onSpecialPage' => $onSpecialPage,
-		);
-		
 		// TODO: Implement case for users who have disabled article creation help
 		// TODO: Implement control and test groups for A/B testing
+		
+		// (We currently have no config info to send to JS. It appears that in
+		// the future we will have some... so, for now, leaving this function in.)
 
 		return true;
 	}

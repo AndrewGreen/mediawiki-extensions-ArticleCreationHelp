@@ -1,14 +1,13 @@
 /**
  *  Main Javascript for ArticleCreationHelp.
  *
- *  Here's how the separation of concerns works here. There are four singletons and
+ *  Here's how the separation of concerns works here. There are three singletons and
  *  one class that know nothing about each other:
  *
- *    state             Holds info about current state
+ *    state             Holds info about current state and writes log entries
  *    uiInteractionMgr  Binds handlers for red links, manages low-level interaction
  *    htmlFactory       Produces HTML strings for inclusion in guiders
- * 	  logger            Logs stuff TODO
- *    RedLink           A high-level wrapper for red links
+ *    RedLink           A wrapper for red links
  *
  *  Finally, there's a presenter that uses all of the above and contains the
  *  global logic.
@@ -16,10 +15,10 @@
  */
 ( function ( $, mw ) {
 	$( document ).ready( function () {
-		var state, uiInteractionMgr, htmlFactory, logger;
+		var state, uiInteractionMgr, htmlFactory;
 
 		/**
-		 * Higher-level wrapper class for red links.
+		 * Wrapper class for red links.
 		 *
 		 * @param {jQuery} $elem jQuery object representing a red link DOM element
 		 *
@@ -70,24 +69,40 @@
 		};
 
 		/**
-		 * Manages information on current state.
+		 * Manages information on current state, and provides a method
+		 * for writing a log entry.
+		 *
+		 * (Logging and state are closely linked, since log entries contain
+		 * state information plus an action type.)
 		 *
 		 * @singleton
 		 */
 		state = ( function () {
-			var config, loggedIn, onSpecialPage;
+			var isAnon, token, userId, pageTitle, pageId, pageNs;
 
-			// TODO Simplify getting stuff from config?
-			config = mw.config.get( [ 'wgArticleCreationHelpRedLinks' ] );
-			loggedIn = config.wgArticleCreationHelpRedLinks.loggedIn;
-			onSpecialPage = config.wgArticleCreationHelpRedLinks.onSpecialPage;
+			isAnon = mw.user.isAnon();
+			token = mw.user.id();
+			userId = mw.config.get( 'wgUserId' );
+			pageTitle = mw.config.get( 'wgTitle' );
+			pageId = mw.config.get( 'wgArticleId' );
+			pageNs = mw.config.get( 'wgNamespaceNumber' );
 
 			// Public (internal) API
 			return {
-				loggedIn: loggedIn,
-				onSpecialPage: onSpecialPage,
+				isAnon: isAnon,
 				activeTour: null,
-				focusedRedLink: null
+				focusedRedLink: null,
+
+				/**
+				 * Log an action of the type indicated.
+				 *
+				 * @param {String} actionType See
+				 *     https://meta.wikimedia.org/wiki/Schema:ArticleCreationHelp
+				 *     for possible values.
+				 */
+				log: function (actionType) {
+
+				}
 			};
 		}() );
 
@@ -616,13 +631,10 @@
 			};
 		}() );
 
-		// TODO implement logging
-		logger = ( function (){}() );
-
 		/**
 		 * Presenter. Uses other top-level objects, but is not referenced by
 		 * any of them. Provides an API (internal, i.e., not intended for use
-		 * outside  this extension) at mw.articlecreationhelp.internal.
+		 * outside this extension) at mw.articlecreationhelp.internal.
 		 */
 		mw.articlecreationhelp = {};
 		mw.articlecreationhelp.internal = ( function () {
@@ -636,33 +648,92 @@
 				'loggedInTourName':	'articlecreationhelpredlinksloggedin',
 			};
 
-			// set up URLs that don't change depending
-			// on the red link we're over
+			// set up URLs that don't change depending on the red link we're over
 			signUpURL = new mw.Uri( mw.util.wikiGetlink( 'Special:UserLogin' ) )
 				.extend( { type: 'signup' } );
 
 			logInURL = mw.util.wikiGetlink( 'Special:UserLogin' );
 			readMoreURL = 'https://en.wikipedia.org/wiki/Wikipedia:Notability';
 
+			// *********** Handlers for events and user actions
+
+			/**
+			 * Called when a tour is closed. Resets state.
+			 *
+			 */
 			function closeTourHandler () {
 				state.activeTour = null;
 				uiInteractionMgr.resetNonHoverInteractionState();
 			};
 
-			function guiderMouseEnter() {
+			/**
+			 * Called by GuidedTour when the mouse enters a guider. We just
+			 * pass the info along to the uiInteractionMgr.
+			 */
+			function guiderMouseEnter () {
 				uiInteractionMgr.guiderEnter();
 			}
 
-			function guiderMouseLeave() {
+			/**
+			 * Called by GuidedTour when the mouse leaves a guider. We just
+			 * pass the info along to the uiInteractionMgr.
+			 */
+			function guiderMouseLeave () {
 				uiInteractionMgr.guiderLeave();
 			}
 
-			function learnMoreClick() {
+			/**
+			 * Called when the user clicks on "Learn more" (1st guider for
+			 * anonymous users).
+			 */
+			function learnMoreClick () {
 				uiInteractionMgr.confirmNonHoverInteraction();
 				mw.libs.guiders.next();
 			}
 
-			showTour = function ( $a ) {
+			/**
+			 * Called when the user clicks on "Log in" (2nd guider for
+			 * anonymous users).
+			 */
+			function logInClick () {
+
+			}
+
+			/**
+			 * Called when the user clicks on "Create an account" (2nd guider
+			 * for anonymous users).
+			 */
+			function createAccountClick () {
+
+			}
+
+			/**
+			 * Called when the user clicks on the "Read more" link (2nd guider
+			 * for anonymous users).
+			 */
+			function readMoreClick () {
+
+			}
+
+			/**
+			 * Called when the user clicks on "Create aricle" (1st guider for
+			 * logged in users).
+			 */
+			function createArticleClick () {
+
+			}
+
+			// *********** Showing and hiding tours
+
+			/**
+			 * Called by uiInteractionMgr to show a tour (sent as a callback).
+			 *
+			 * @param {jQuery} $a jQuery wrapper for the red link element that
+			 *     the guiders should point to.
+			 * @param {String} interactionType The type of interaction that
+			 *     caused this this request for a tour. Can by 'click" or 'hover'.
+			 */
+			showTour = function ( $a, interactionType ) {
 				var tourController, articleTitle, createArticleURL;
 
 				// Don't launch a tour if one's already going for the same link
@@ -684,30 +755,7 @@
 				// TODO deal with other Mediawiki configurations,
 				// (for example, wikis where anonymous users can create articles).
 
-				if ( state.loggedIn ) {
-
-					state.activeTour = TOURS.loggedInTourName;
-
-					// Red links tour for logged in users
-
-					tourController = mw.guidedTour.getTourController( state.activeTour );
-					tourController.reset();
-
-					createArticleURL = new mw.Uri( mw.util.wikiGetlink( 'Special:ArticleCreationHelp' ) )
-						.extend( {
-							newtitle: articleTitle,
-							returnto: mw.config.get( 'wgPageName' )
-						}
-					);
-
-					tourController.modifyStep( 0, {
-						description: htmlFactory.makeLoggedInStep0Desc(
-							articleTitle, createArticleURL )
-					} );
-
-					tourController.launch();
-
-				} else {
+				if ( state.isAnon ) {
 
 					// Red links tour for anonymous users
 
@@ -729,9 +777,35 @@
 					} );
 
 					tourController.launch();
+
+				} else {
+
+					// Red links tour for logged in users
+
+					state.activeTour = TOURS.loggedInTourName;
+
+					tourController = mw.guidedTour.getTourController( state.activeTour );
+					tourController.reset();
+
+					createArticleURL = new mw.Uri( mw.util.wikiGetlink( 'Special:ArticleCreationHelp' ) )
+						.extend( {
+							newtitle: articleTitle,
+							returnto: mw.config.get( 'wgPageName' )
+						}
+					);
+
+					tourController.modifyStep( 0, {
+						description: htmlFactory.makeLoggedInStep0Desc(
+							articleTitle, createArticleURL )
+					} );
+
+					tourController.launch();
 				}
 			};
 
+			/**
+			 * Called by uiInteractionMgr to hide a tour (sent as a callback).
+			 */
 			hideTour = function () {
 				if ( state.activeTour ) {
 					mw.guidedTour.getTourController( state.activeTour ).cancel();
@@ -740,7 +814,8 @@
 
 			uiInteractionMgr.bind( showTour, hideTour );
 
-			// API (intended for internal use) at mw.articlecreationhelp.internal
+			// *********** Public API (intended for internal use), made available
+			// at mw.articlecreationhelp.internal
 			return {
 				closeTourHandler: closeTourHandler,
 				guiderMouseEnter: guiderMouseEnter,
