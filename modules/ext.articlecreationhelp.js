@@ -78,17 +78,22 @@
 		 * @singleton
 		 */
 		state = ( function () {
-			var isAnon, token, userId, pageTitle, pageId, pageNs;
+			var isAnon, token, userId, pageTitle, pageId, pageNs, obj;
 
 			isAnon = mw.user.isAnon();
+
+			// TODO Using cookies here. Mention this in the extension's
+			// documentation, check that it's OK according to privacy policy
+			// and privacy laws.
 			token = mw.user.id();
+
 			userId = mw.config.get( 'wgUserId' );
 			pageTitle = mw.config.get( 'wgTitle' );
 			pageId = mw.config.get( 'wgArticleId' );
 			pageNs = mw.config.get( 'wgNamespaceNumber' );
 
 			// Public (internal) API
-			return {
+			obj = {
 				isAnon: isAnon,
 				activeTour: null,
 				focusedRedLink: null,
@@ -100,10 +105,29 @@
 				 *     https://meta.wikimedia.org/wiki/Schema:ArticleCreationHelp
 				 *     for possible values.
 				 */
-				log: function (actionType) {
+				log: function ( actionType ) {
+					var event = {
+							isAnon: isAnon,
+							token: token,
+							action: actionType,
+							redLinkTitle:
+								// really focusedRedLink should always be set
+								// when we get here, but just in case...
+								obj.focusedRedLink ? obj.focusedRedLink.articleTitle : '',
+							pageTitle: pageTitle,
+							pageId: pageId,
+							pageNs: pageNs
+					} ;
 
+					if ( userId ) {
+						event.userId = userId;
+					}
+
+					mw.eventLog.logEvent( 'ArticleCreationHelp', event );
 				}
 			};
+
+			return obj;
 		}() );
 
 		/**
@@ -157,7 +181,7 @@
 			// Click (pretty straightforward)
 			function click( event ) {
 				clearHoverTimer();
-				self.showCallback( getAnchorFromEvent( event ) );
+				showCallback( getAnchorFromEvent( event ), 'click' );
 
 				// we've gotten a click, so cancel auto-hiding the guider
 				clearHideAfterHoverTimer();
@@ -181,7 +205,7 @@
 				if ( hoverTimer === null ) {
 					hoverTimer = setTimeout(function() {
 						clearHoverTimer();
-						self.showCallback( $a );
+						self.showCallback( $a, 'hover' );
 					}, HOVER_TIMEOUT_MS );
 				}
 
@@ -418,24 +442,41 @@
 			 * @returns {string} HTML for button
 			 */
 			function makeInlineButton( options ) {
-				var vars, url;
-				vars = {
-					name: options.name
+				var vars = {
+					name: options.name,
+					actionAttrs: makeActionAttrs(
+							options.url,
+							options.callbackString,
+							true)
 				};
-				url = 'href="' + ( options.url || 'javascript:void(0)' ) + '" ';
-
-				if ( options.callbackString ) {
-					vars.actionAttrs = url
-						+ 'onclick="'
-						+ 'var event = arguments[0] || window.event; event.stopPropagation();'
-						+ options.callbackString
-						+ '"';
-
-				} else {
-					vars.actionAttrs = url;
-				}
 
 				return executeTemplate( 'inlineBtn', vars );
+			}
+
+			/**
+			 * HTML snippet for link action attributes (href and onclick)
+			 *
+			 * @private
+			 */
+			function makeActionAttrs( url, callbackStr, stopPropagation ) {
+				var href, onClick;
+
+				href = 'href="' + ( url || 'javascript:void(0)' ) + '"';
+
+				if (callbackStr) {
+
+					if (stopPropagation) {
+						onClick =
+							'var event = arguments[0] || window.event; event.stopPropagation(); '
+							+ callbackStr;
+					} else {
+						onClick = callbackStr;
+					}
+
+					return href + ' onclick="' + onClick + '"';
+				} else {
+					return href;
+				}
 			}
 
 			// *********** Templates
@@ -687,40 +728,9 @@
 			 * anonymous users).
 			 */
 			function learnMoreClick () {
+				state.log( 'learn-more-click' );
 				uiInteractionMgr.confirmNonHoverInteraction();
 				mw.libs.guiders.next();
-			}
-
-			/**
-			 * Called when the user clicks on "Log in" (2nd guider for
-			 * anonymous users).
-			 */
-			function logInClick () {
-
-			}
-
-			/**
-			 * Called when the user clicks on "Create an account" (2nd guider
-			 * for anonymous users).
-			 */
-			function createAccountClick () {
-
-			}
-
-			/**
-			 * Called when the user clicks on the "Read more" link (2nd guider
-			 * for anonymous users).
-			 */
-			function readMoreClick () {
-
-			}
-
-			/**
-			 * Called when the user clicks on "Create aricle" (1st guider for
-			 * logged in users).
-			 */
-			function createArticleClick () {
-
 			}
 
 			// *********** Showing and hiding tours
@@ -736,7 +746,8 @@
 			showTour = function ( $a, interactionType ) {
 				var tourController, articleTitle, createArticleURL;
 
-				// Don't launch a tour if one's already going for the same link
+				// Don't log or launch a tour if one's already going for the same
+				// link
 				if ( ( state.activeTour ) && ( state.focusedRedLink.same( $a ) ) ) {
 					return;
 				}
@@ -745,16 +756,19 @@
 				// red links to the same page. (That can happen when editing a user
 				// page or a user talk page.)
 
+				// update red link state
 				if ( state.focusedRedLink ) {
 					state.focusedRedLink.markForGuider( false );
 				}
 				state.focusedRedLink = new RedLink( $a );
 				state.focusedRedLink.markForGuider( true );
-				articleTitle = state.focusedRedLink.articleTitle;
 
 				// TODO deal with other Mediawiki configurations,
 				// (for example, wikis where anonymous users can create articles).
 
+				// show a tour
+
+				articleTitle = state.focusedRedLink.articleTitle;
 				if ( state.isAnon ) {
 
 					// Red links tour for anonymous users
@@ -800,6 +814,19 @@
 					} );
 
 					tourController.launch();
+				}
+
+				// log red link interaction
+				switch (interactionType) {
+					case 'hover':
+						state.log('red-link-hover');
+						break;
+					case 'click':
+						state.log('red-link-click');
+						break;
+					default:
+						// should never get here
+						break;
 				}
 			};
 

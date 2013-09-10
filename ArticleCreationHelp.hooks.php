@@ -11,7 +11,7 @@ class ArticleCreationHelpHooks {
 
 	// See https://meta.wikimedia.org/wiki/Schema:ArticleCreationHelp
 	const SCHEMA_NAME = 'ArticleCreationHelp';
-	const SCHEMA_REV_ID = 5797614;
+	const SCHEMA_REV_ID = 5800247;
 	
 	/**
 	 * MakeGlobalVariablesScript hook.
