@@ -78,7 +78,7 @@ $wgResourceModules[ 'ext.articlecreationhelp' ] = array(
 		'articlecreationhelp-redlinks-noarticle-pre',
 		'articlecreationhelp-redlinks-noarticle-post',
 		'articlecreationhelp-redlinks-firststep-pre',
-		'articlecreationhelp-redlinks-firststep-signup',
+		'articlecreationhelp-redlinks-firststep-createaccount',
 		'articlecreationhelp-redlinks-firststep-or',
 		'articlecreationhelp-redlinks-firststep-login',
 		'articlecreationhelp-redlinks-firststep-post',

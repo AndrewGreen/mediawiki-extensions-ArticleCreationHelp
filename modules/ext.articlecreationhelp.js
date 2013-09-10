@@ -512,10 +512,10 @@
 					'    <span class="ext-art-c-h-suggestion-text">{msg}</span>&nbsp;{#button}' +
 					'</p>',
 
-				signUpOrLogIn:
+				createAccountOrLogIn:
 					'<p>' +
 					'    <span class="ext-art-c-h-suggestion-text">{pre}</span>' +
-					'    {#signUpBtn}' +
+					'    {#createAccountBtn}' +
 					'    <span class="ext-art-c-h-suggestion-text">{or}</span>' +
 					'    {#logInBtn}' +
 					'    <span class="ext-art-c-h-suggestion-text">{post}</span>' +
@@ -589,21 +589,21 @@
 				 * Create HTML for the second guider over red links for
 				 * anonymous users.
 				 *
-				 * @param {String} signUpURL URL for the "Create an account" button
+				 * @param {String} createAccountURL URL for the "Create an account" button
 				 * @param {String} logInURL URL for the "Log in" button
 				 * @param {String} readMoreURL URL for the link to more information
 				 * @returns {String} HTML
 				 */
-				makeAnonStep1Desc: function( signUpURL, logInURL, readMoreURL ) {
-					var signUpOrLogIn, readMore;
+				makeAnonStep1Desc: function( createAccountURL, logInURL, readMoreURL ) {
+					var createAccountOrLogIn, readMore;
 
-					signUpOrLogIn = executeTemplate( 'signUpOrLogIn',
+					createAccountOrLogIn = executeTemplate( 'createAccountOrLogIn',
 						{
 							pre: mw.message( 'articlecreationhelp-redlinks-firststep-pre' ).text(),
-							signUpBtn:
+							createAccountBtn:
 								{
-									name: mw.message( 'articlecreationhelp-redlinks-firststep-signup' ).text(),
-									url: signUpURL
+									name: mw.message( 'articlecreationhelp-redlinks-firststep-createaccount' ).text(),
+									url: createAccountURL
 								},
 							or: mw.message( 'articlecreationhelp-redlinks-firststep-or' ).text(),
 							logInBtn:
@@ -626,7 +626,7 @@
 					);
 
 					return executeTemplate( 'dividedContainer', {
-						topContent: signUpOrLogIn,
+						topContent: createAccountOrLogIn,
 						bottomContent: readMore
 					} );
 				},
@@ -680,7 +680,7 @@
 		mw.articlecreationhelp = {};
 		mw.articlecreationhelp.internal = ( function () {
 
-			var TOURS, signUpURL, logInURL, readMoreURL, showTour, hideTour;
+			var TOURS, createAccountURL, logInURL, readMoreURL, showTour, hideTour;
 
 			// Tour names: coordinate with ArticleCreationHelp.php and
 			// .js files for tours.
@@ -690,7 +690,7 @@
 			};
 
 			// set up URLs that don't change depending on the red link we're over
-			signUpURL = new mw.Uri( mw.util.wikiGetlink( 'Special:UserLogin' ) )
+			createAccountURL = new mw.Uri( mw.util.wikiGetlink( 'Special:UserLogin' ) )
 				.extend( { type: 'signup' } );
 
 			logInURL = mw.util.wikiGetlink( 'Special:UserLogin' );
@@ -786,7 +786,7 @@
 
 					tourController.modifyStep( 1, {
 						description: htmlFactory.makeAnonStep1Desc(
-						signUpURL, logInURL, readMoreURL),
+						createAccountURL, logInURL, readMoreURL),
 
 					} );
 
@@ -841,7 +841,7 @@
 
 			uiInteractionMgr.bind( showTour, hideTour );
 
-			// *********** Public API (intended for internal use), made available
+			// *********** Public API (intended for internal use), available
 			// at mw.articlecreationhelp.internal
 			return {
 				closeTourHandler: closeTourHandler,
