@@ -2,9 +2,9 @@
  *  Main Javascript for ArticleCreationHelp.
  *
  *  Here's how the separation of concerns works here. There are three singletons
- *  and one class that know almost nothing about each other:
+ *  and one class that know nothing about each other:
  *
- *    state             Holds info about current state and writes log entries
+ *    state             Holds info about current state
  *    uiInteractionMgr  Binds handlers for red links, manages low-level interaction
  *    htmlFactory       Produces HTML strings for inclusion in guiders
  *    RedLink           A wrapper for red links
@@ -69,18 +69,12 @@
 		};
 
 		/**
-		 * Manages information on current state, and provides a method
-		 * for writing a log entry.
-		 *
-		 * (Logging and state are closely linked, since log entries contain
-		 * state information plus an action type.)
-		 *
-		 * TODO Move logging to presenter?
+		 * Manages information on current state.
 		 *
 		 * @singleton
 		 */
 		state = ( function () {
-			var isAnon, token, userId, pageTitle, pageId, pageNs, obj;
+			var isAnon, token, userId, pageTitle, pageId, pageNs;
 
 			isAnon = mw.user.isAnon();
 
@@ -95,41 +89,16 @@
 			pageNs = mw.config.get( 'wgNamespaceNumber' );
 
 			// Public (internal) API
-			obj = {
+			return {
 				isAnon: isAnon,
+				token: token,
+				userId: userId,
+				pageTitle: pageTitle,
+				pageId: pageId,
+				pageNs: pageNs,
 				activeTour: null,
 				focusedRedLink: null,
-
-				/**
-				 * Log an action of the type indicated.
-				 *
-				 * @param {String} actionType See
-				 *     https://meta.wikimedia.org/wiki/Schema:ArticleCreationHelp
-				 *     for possible values.
-				 */
-				log: function ( actionType ) {
-					var event = {
-						isAnon: isAnon,
-						token: token,
-						action: actionType,
-						redLinkTitle:
-							// really focusedRedLink should always be set
-							// when we get here, but just in case...
-							obj.focusedRedLink ? obj.focusedRedLink.articleTitle : '',
-						pageTitle: pageTitle,
-						pageId: pageId,
-						pageNs: pageNs
-					} ;
-
-					if ( userId ) {
-						event.userId = userId;
-					}
-
-					mw.eventLog.logEvent( 'ArticleCreationHelp', event );
-				}
 			};
-
-			return obj;
 		}() );
 
 		/**
@@ -682,7 +651,7 @@
 		mw.articlecreationhelp = {};
 		mw.articlecreationhelp.internal = ( function () {
 
-			var TOURS, createAccountURL, logInURL, readMoreURL, showTour, hideTour;
+			var TOURS, createAccountURL, logInURL, readMoreURL;
 
 			// Tour names: coordinate with ArticleCreationHelp.php and
 			// .js files for tours.
@@ -697,6 +666,9 @@
 
 			logInURL = mw.util.wikiGetlink( 'Special:UserLogin' );
 			readMoreURL = 'https://en.wikipedia.org/wiki/Wikipedia:Notability';
+
+			// start handling UI
+			uiInteractionMgr.bind( showTour, hideTour );
 
 			// *********** Handlers for events and user actions
 
@@ -730,9 +702,40 @@
 			 * anonymous users).
 			 */
 			function learnMoreClick () {
-				state.log( 'learn-more-click' );
+				log( 'learn-more-click' );
 				uiInteractionMgr.confirmNonHoverInteraction();
 				mw.libs.guiders.next();
+			}
+
+			// *********** Logging
+
+			/**
+			 * Log an action of the type indicated.
+			 *
+			 * @param {String} actionType See
+			 *     https://meta.wikimedia.org/wiki/Schema:ArticleCreationHelp
+			 *     for possible values.
+			 */
+			function log ( actionType ) {
+				var event = {
+					isAnon: state.isAnon,
+					token: state.token,
+					action: actionType,
+					redLinkTitle:
+						// really focusedRedLink should always be set
+						// when we get here, but just in case...
+						state.focusedRedLink ?
+						state.focusedRedLink.articleTitle : '',
+					pageTitle: state.pageTitle,
+					pageId: state.pageId,
+					pageNs: state.pageNs
+				} ;
+
+				if ( state.userId ) {
+					event.userId = state.userId;
+				}
+
+				mw.eventLog.logEvent( 'ArticleCreationHelp', event );
 			}
 
 			// *********** Showing and hiding tours
@@ -745,7 +748,7 @@
 			 * @param {String} interactionType The type of interaction that
 			 *     caused this this request for a tour. Can by 'click" or 'hover'.
 			 */
-			showTour = function ( $a, interactionType ) {
+			 function showTour ( $a, interactionType ) {
 				var tourController, articleTitle, createArticleURL;
 
 				// Don't log or launch a tour if one's already going for the same
@@ -821,27 +824,25 @@
 				// log red link interaction
 				switch (interactionType) {
 					case 'hover':
-						state.log('red-link-hover');
+						log('red-link-hover');
 						break;
 					case 'click':
-						state.log('red-link-click');
+						log('red-link-click');
 						break;
 					default:
 						// should never get here
 						break;
 				}
-			};
+			}
 
 			/**
 			 * Called by uiInteractionMgr to hide a tour (sent as a callback).
 			 */
-			hideTour = function () {
+			function hideTour () {
 				if ( state.activeTour ) {
 					mw.guidedTour.getTourController( state.activeTour ).cancel();
 				}
-			};
-
-			uiInteractionMgr.bind( showTour, hideTour );
+			}
 
 			// *********** Public API (intended for internal use), available
 			// at mw.articlecreationhelp.internal
