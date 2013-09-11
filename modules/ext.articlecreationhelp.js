@@ -1,8 +1,8 @@
 /**
  *  Main Javascript for ArticleCreationHelp.
  *
- *  Here's how the separation of concerns works here. There are three singletons and
- *  one class that know nothing about each other:
+ *  Here's how the separation of concerns works here. There are three singletons
+ *  and one class that know almost nothing about each other:
  *
  *    state             Holds info about current state and writes log entries
  *    uiInteractionMgr  Binds handlers for red links, manages low-level interaction
@@ -75,6 +75,8 @@
 		 * (Logging and state are closely linked, since log entries contain
 		 * state information plus an action type.)
 		 *
+		 * TODO Move logging to presenter?
+		 *
 		 * @singleton
 		 */
 		state = ( function () {
@@ -107,16 +109,16 @@
 				 */
 				log: function ( actionType ) {
 					var event = {
-							isAnon: isAnon,
-							token: token,
-							action: actionType,
-							redLinkTitle:
-								// really focusedRedLink should always be set
-								// when we get here, but just in case...
-								obj.focusedRedLink ? obj.focusedRedLink.articleTitle : '',
-							pageTitle: pageTitle,
-							pageId: pageId,
-							pageNs: pageNs
+						isAnon: isAnon,
+						token: token,
+						action: actionType,
+						redLinkTitle:
+							// really focusedRedLink should always be set
+							// when we get here, but just in case...
+							obj.focusedRedLink ? obj.focusedRedLink.articleTitle : '',
+						pageTitle: pageTitle,
+						pageId: pageId,
+						pageNs: pageNs
 					} ;
 
 					if ( userId ) {
@@ -685,8 +687,8 @@
 			// Tour names: coordinate with ArticleCreationHelp.php and
 			// .js files for tours.
 			TOURS = {
-				'anonTourName':	'articlecreationhelpredlinksanon',
-				'loggedInTourName':	'articlecreationhelpredlinksloggedin',
+				'anonTourName': 'articlecreationhelpredlinksanon',
+				'loggedInTourName': 'articlecreationhelpredlinksloggedin',
 			};
 
 			// set up URLs that don't change depending on the red link we're over
@@ -786,7 +788,7 @@
 
 					tourController.modifyStep( 1, {
 						description: htmlFactory.makeAnonStep1Desc(
-						createAccountURL, logInURL, readMoreURL),
+							createAccountURL, logInURL, readMoreURL),
 
 					} );
 
