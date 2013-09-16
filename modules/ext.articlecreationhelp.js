@@ -79,8 +79,9 @@
 			isAnon = mw.user.isAnon();
 
 			// TODO Using cookies here. Mention this in the extension's
-			// documentation, check that it's OK according to privacy policy
-			// and privacy laws.
+			// documentation, check that it's OK. (Are cookies always
+			// used for anon users in any case? Are there restrictions on
+			// how they should be used in logging?)
 			token = mw.user.id();
 
 			userId = mw.config.get( 'wgUserId' );
@@ -163,6 +164,7 @@
 			}
 
 			// Hover (a lot more involved)
+			// TODO Use mouseenter and mouseleave instead of mousein and mouseout?
 			function mousein( event ) {
 				var $a;
 
@@ -226,9 +228,10 @@
 			// Public (internal) API
 			return {
 				/**
-				 * Bind handlers to UI, calling showCallback($elem) when a guider
-				 * should be shown over the red link represented by $elem
-				 * (a jQuery object wrapping a single DOM element).
+				 * Bind handlers to UI. We'll call showCallback($elem) when a guider
+				 * should appear over the red link represented by $elem
+				 * (a jQuery object wrapping a single DOM element). And we'll call
+				 * hideCallback when a guider should disappear.
 				 *
 				 * @param {Function} showCallback function to show a guider over
 				 *     a red link
@@ -322,17 +325,18 @@
 			 *
 			 * @private
 			 *
-			 * @param {String} the template string to prepare
+			 * @param {String} templStr the template string to prepare
 			 */
 			function prepareTemplate( templStr ) {
 				var compiledTmpl, lastIdx, varStrTrimmed, varStrMatch;
 
 				// turn newlines into spaces
 				// if a space appears  before or after an html tag, it'll
-				// be stripped out further on
+				// be stripped out later on
 				templStr = templStr.replace( /\n/g, ' ' );
 
-				// replace pairs of literal and var sections (e.g., 'lit{var}')
+				// replace pairs of literal and var/inline button sections
+				// (e.g., 'lit{var/btnOpts}')
 				lastIdx = 0;
 				compiledTmpl = templStr.replace
 					( /([^{}]*){([^{}]*)}/g,
@@ -462,7 +466,7 @@
 			 *                 Options available: name, url, callbackString.
 			 *
 			 *    Everything else in the template is rendered as is--except that
-			 *    whitespace between tags is stripped out.
+			 *    whitespace before and after tags is stripped out.
 			 *
 			 */
 			var templates = {
@@ -665,6 +669,8 @@
 				.extend( { type: 'signup' } );
 
 			logInURL = mw.util.wikiGetlink( 'Special:UserLogin' );
+
+			// TODO Hardcoding this here, should be configured elsewhere
 			readMoreURL = 'https://en.wikipedia.org/wiki/Wikipedia:Notability';
 
 			// start handling UI
@@ -836,7 +842,8 @@
 			}
 
 			/**
-			 * Called by uiInteractionMgr to hide a tour (sent as a callback).
+			 * This is called by uiInteractionMgr to hide a tour (function is
+			 * sent as a callback).
 			 */
 			function hideTour () {
 				if ( state.activeTour ) {
