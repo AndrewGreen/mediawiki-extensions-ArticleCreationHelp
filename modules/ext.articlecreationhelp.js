@@ -24,23 +24,38 @@
 		 *
 		 */
 		function RedLink ( $elem ) {
-			var match;
+			var match, href, pattern;
 			this.$elem = $elem;
 
 			// CSS class detected by guiders for attachment. Must coordinate
 			// with ext.articlecreationhelp.css and attachTo in tours
 			this.RED_LINK_ATTACH_CLASS = 'ext-art-c-h-redlinkattach';
 
-			// Extract article title
+			// Extract article title. It seems red link URLs have two
+			// possible forms.
 			// TODO Find a better way to do this, maybe with parser hooks?
-			// Still, it seems to work.
-			// TODO Leaves off namespace
-			match = this.$elem.attr( 'href' ).match( /title=([^&]*)/ );
-			if (match && match.length > 1) {
+
+			// Red links in article text match here.
+			href = this.$elem.attr( 'href' );
+			match = href.match( /title=([^&]*)/ );
+			if (match) {
 				this.articleTitle =  match[1].replace( /_/g, " " );
+
 			} else {
-				// fallback
-				this.articleTitle = $elem.text();
+
+				// Red links in header (e.g., user page and user talk page)
+				// match here.
+				pattern = mw.config.get( 'wgArticlePath' ).replace('$1', '([^\?]*)' );
+				match = href.match( new RegExp( pattern ));
+
+				if (match) {
+					this.articleTitle =  match[1].replace( /_/g, " " );
+
+				} else {
+
+					// fallback, just in case
+					this.articleTitle = $elem.text();
+				}
 			}
 		};
 
