@@ -336,22 +336,25 @@
 
 			/**
 			 * Turn a human-readable template string into JS code to be run
-			 * using eval().
+			 * using eval(). The code will create an array and join its
+			 * elements using an empty string, as in "[expr1, expr1].join('')".
 			 *
 			 * @private
 			 *
-			 * @param {String} templStr the template string to prepare
+			 * @param {String} templStr the template string to prepare.
 			 */
 			function prepareTemplate( templStr ) {
 				var compiledTmpl, lastIdx, varStrTrimmed, varStrMatch;
 
-				// turn newlines into spaces
-				// if a space appears  before or after an html tag, it'll
-				// be stripped out later on
+				// Turn newlines into spaces.
+				// If a space appears  before or after an html tag, it'll
+				// be stripped out later on.
 				templStr = templStr.replace( /\n/g, ' ' );
 
-				// replace pairs of literal and var/inline button sections
-				// (e.g., 'lit{var/btnOpts}')
+				// Replace pairs of literal and var/inline button sections,
+				// e.g., 'lit{var|btnOpts}'. In the regex, the literal is the
+				// first capture group and the variable or button options are
+				// the second one.
 				lastIdx = 0;
 				compiledTmpl = templStr.replace
 					( /([^{}]*){([^{}]*)}/g,
